@@ -16,3 +16,4 @@
 - `tests/smoke.d2` — small validation diagram.
 - `agents/openai.yaml` — optional Codex/plugin metadata.
 - `LICENSE` — MIT license.
+- `.gitignore` — excludes rendered diagram outputs and local cruft.

@@ -1,0 +1,27 @@
+# Rendered diagram outputs (regenerate from .d2 source)
+*.svg
+*.png
+*.pdf
+*.pptx
+*.gif
+
+# Keep nothing rendered, but allow intentional asset exceptions here if needed
+# !docs/example.svg
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# Temp
+*.tmp
+/tmp/

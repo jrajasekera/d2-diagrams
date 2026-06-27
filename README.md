@@ -10,6 +10,8 @@ This skill is designed for Claude Code, OpenAI Codex, Hermes Agent, Pi, and othe
 d2-diagrams/
 ├── SKILL.md                         # Main skill instructions and trigger metadata
 ├── AGENTS.md                        # Repo-level guidance for agents that read AGENTS.md
+├── MANIFEST.md                      # File-by-file inventory of the package
+├── LICENSE                          # MIT license
 ├── references/                      # On-demand deep reference files
 ├── templates/                       # Starter D2 templates
 ├── scripts/                         # Optional helper scripts for validation/rendering/scaffolding
@@ -117,6 +119,14 @@ scripts/check_d2.sh tests/smoke.d2
 ```
 
 If `d2` is not installed, the helper script reports that clearly. The skill itself remains usable for authoring source-only diagrams.
+
+## Validate the skill
+
+This package follows the [Agent Skills specification](https://agentskills.io/specification). To confirm the `SKILL.md` frontmatter and naming conventions are valid, run the reference validator from the parent directory:
+
+```bash
+skills-ref validate ./d2-diagrams
+```
 
 ## License
 
