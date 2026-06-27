@@ -1,0 +1,13 @@
+# Import example. Keep this file in the same directory as import-common-style.d2.
+...@import-common-style
+
+direction: right
+
+user: User { class: external }
+web: Web App { class: service }
+api: API { class: service }
+db: Database { class: datastore }
+
+user -> web: uses
+web -> api: HTTPS
+api -> db: SQL

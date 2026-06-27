@@ -1,0 +1,51 @@
+# CI/CD pipeline starter
+direction: right
+
+classes: {
+  stage: {
+    style: {
+      fill: "#f8fafc"
+      stroke: "#475569"
+      border-radius: 8
+    }
+  }
+  gate: {
+    shape: diamond
+    style: {
+      fill: "#fef9c3"
+      stroke: "#ca8a04"
+    }
+  }
+}
+
+dev: Developer { shape: person }
+repo: Git Repository { shape: stored_data }
+
+ci: CI {
+  build: Build { class: stage }
+  unit: Unit Tests { class: stage }
+  scan: Security Scan { class: stage }
+  package: Package Image { class: stage }
+}
+
+gate: Approval? { class: gate }
+
+prod: Production {
+  deploy: Deploy { class: stage }
+  smoke: Smoke Tests { class: stage }
+  monitor: Monitor { class: stage }
+}
+
+rollback: Rollback { class: stage }
+
+dev -> repo: push
+repo -> ci.build: trigger
+ci.build -> ci.unit
+ci.unit -> ci.scan
+ci.scan -> ci.package
+ci.package -> gate
+gate -> prod.deploy: approved
+prod.deploy -> prod.smoke
+prod.smoke -> prod.monitor: healthy
+prod.smoke -> rollback: failed
+rollback -> prod.deploy: restore previous

@@ -1,0 +1,33 @@
+# UML class diagram starter
+direction: right
+
+CheckoutService: {
+  shape: class
+  -orders: OrderRepository
+  -payments: PaymentGateway
+  +checkout(cart_id string): Order
+  +refund(order_id string): void
+}
+
+OrderRepository: {
+  shape: class
+  +save(order Order): void
+  +find(id string): Order
+}
+
+PaymentGateway: {
+  shape: class
+  +authorize(amount Money): Authorization
+  +capture(auth Authorization): Receipt
+}
+
+Order: {
+  shape: class
+  +id: string
+  +status: OrderStatus
+  +total(): Money
+}
+
+CheckoutService -> OrderRepository: persists
+CheckoutService -> PaymentGateway: charges
+OrderRepository -> Order: stores

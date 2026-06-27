@@ -1,0 +1,36 @@
+# Composition starter: scenarios and steps
+direction: right
+
+client: Client
+api: API
+primary_db: Primary DB { shape: cylinder }
+replica_db: Replica DB { shape: cylinder }
+monitor: Monitor
+
+client -> api: request
+api -> primary_db: read/write
+primary_db -> replica_db: replicate
+monitor -> primary_db: health check
+
+scenarios: {
+  normal: {
+    replica_db.style.opacity: 0.45
+  }
+
+  failover: {
+    primary_db.style.opacity: 0.25
+    api -> replica_db: fail over writes
+  }
+}
+
+steps: {
+  detect_failure: {
+    monitor -> primary_db: failure detected
+    primary_db.style.fill: "#fee2e2"
+  }
+
+  promote_replica: {
+    replica_db: Promoted Replica
+    api -> replica_db: writes
+  }
+}

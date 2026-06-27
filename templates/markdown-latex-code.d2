@@ -1,0 +1,24 @@
+# Markdown, LaTeX, and code block starter
+direction: right
+
+note: |md
+# Deployment notes
+- Blue/green release
+- Health checks gate traffic shift
+- Rollback if error budget burn is high
+|
+note.shape: rectangle
+
+formula: |latex
+SLO = 1 - \frac{\text{bad events}}{\text{total events}}
+|
+
+snippet: |`ts
+export async function handler(req: Request): Promise<Response> {
+  const ok = req.method === "GET" || req.method === "HEAD";
+  return new Response(ok ? "ok" : "method not allowed");
+}
+`|
+
+note -> formula: defines
+formula -> snippet: enforced by

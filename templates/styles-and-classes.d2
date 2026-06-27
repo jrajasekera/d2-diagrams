@@ -1,0 +1,39 @@
+# Styles, classes, and globs starter
+direction: right
+
+classes: {
+  service: {
+    shape: rectangle
+    style: {
+      fill: "#eef6ff"
+      stroke: "#2563eb"
+      border-radius: 8
+      shadow: true
+    }
+  }
+  database: {
+    shape: cylinder
+    style: {
+      fill: "#fff7ed"
+      stroke: "#c2410c"
+    }
+  }
+  warning: {
+    style: {
+      fill: "#fef3c7"
+      stroke: "#d97706"
+    }
+  }
+}
+
+*.style.font-size: 18
+
+web: Web { class: service }
+api: API { class: service }
+worker: Worker { class: [service; warning] }
+db: PostgreSQL { class: database }
+
+web -> api: REST
+api -> db: SQL
+api -> worker: job
+worker -> db: update

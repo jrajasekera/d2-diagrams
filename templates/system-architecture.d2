@@ -1,0 +1,64 @@
+# System architecture starter
+direction: right
+
+classes: {
+  external: {
+    shape: person
+    style: {
+      fill: "#f8fafc"
+      stroke: "#64748b"
+    }
+  }
+  service: {
+    shape: rectangle
+    style: {
+      fill: "#eef6ff"
+      stroke: "#2563eb"
+      border-radius: 8
+      shadow: true
+    }
+  }
+  data: {
+    shape: cylinder
+    style: {
+      fill: "#fff7ed"
+      stroke: "#c2410c"
+    }
+  }
+  async: {
+    style: {
+      stroke-dash: 4
+    }
+  }
+}
+
+user: Customer { class: external }
+admin: Admin { class: external }
+
+edge: Edge Layer {
+  cdn: CDN { class: service }
+  waf: WAF { class: service }
+}
+
+app: Application Platform {
+  web: Web App { class: service }
+  api: API Service { class: service }
+  worker: Worker { class: service }
+}
+
+data: Data Layer {
+  db: PostgreSQL { class: data }
+  cache: Redis { shape: stored_data }
+  queue: Job Queue { shape: queue }
+}
+
+user -> edge.cdn: HTTPS
+admin -> edge.waf: admin HTTPS
+edge.cdn -> edge.waf
+edge.waf -> app.web: static/app
+app.web -> app.api: REST
+app.api -> data.cache: sessions
+app.api -> data.db: SQL
+app.api -> data.queue: enqueue { class: async }
+app.worker -> data.queue: consume { class: async }
+app.worker -> data.db: update

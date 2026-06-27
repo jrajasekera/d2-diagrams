@@ -1,0 +1,17 @@
+# Sequence diagram starter
+shape: sequence_diagram
+
+user: User
+browser: Browser
+api: API
+db: Database
+queue: Queue
+
+user -> browser: submit order
+browser -> api: POST /orders
+api -> api: validate request
+api -> db: insert order
+db -> api: order id
+api -> queue: publish OrderCreated
+api -> browser: 201 Created
+browser -> user: show confirmation

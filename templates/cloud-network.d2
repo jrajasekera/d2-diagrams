@@ -1,0 +1,33 @@
+# Cloud/network topology starter
+direction: right
+
+internet: Internet { shape: cloud }
+
+region: us-east-1 {
+  vpc: Production VPC {
+    public: Public Subnet {
+      alb: Application Load Balancer
+      nat: NAT Gateway
+    }
+
+    private: Private Subnet {
+      app_a: App Node A
+      app_b: App Node B
+    }
+
+    data: Data Subnet {
+      db: RDS PostgreSQL { shape: cylinder }
+      cache: ElastiCache Redis { shape: stored_data }
+    }
+  }
+}
+
+internet -> region.vpc.public.alb: 443
+region.vpc.public.alb -> region.vpc.private.app_a: 8443
+region.vpc.public.alb -> region.vpc.private.app_b: 8443
+region.vpc.private.app_a -> region.vpc.data.db: 5432
+region.vpc.private.app_b -> region.vpc.data.db: 5432
+region.vpc.private.app_a -> region.vpc.data.cache: 6379
+region.vpc.private.app_b -> region.vpc.data.cache: 6379
+region.vpc.private.app_a -> region.vpc.public.nat: outbound
+region.vpc.private.app_b -> region.vpc.public.nat: outbound
