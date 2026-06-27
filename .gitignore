@@ -22,6 +22,9 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Serena MCP project cache
+.serena/
+
 # Temp
 *.tmp
 /tmp/
