@@ -54,5 +54,5 @@ if [ "${D2_WATCH:-0}" = "1" ]; then
   args+=("--watch")
 fi
 
-d2 "${args[@]}" "$input" "$output"
+d2 ${args[@]+"${args[@]}"} "$input" "$output"
 echo "rendered: $output"

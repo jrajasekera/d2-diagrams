@@ -29,7 +29,7 @@ for file in "$@"; do
     args+=("--theme=${D2_THEME}")
   fi
 
-  if d2 "${args[@]}" "$file" "$out" >/dev/null; then
+  if d2 ${args[@]+"${args[@]}"} "$file" "$out" >/dev/null; then
     echo "ok: $file"
   else
     echo "failed: $file" >&2
