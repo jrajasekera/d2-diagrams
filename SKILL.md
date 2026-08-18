@@ -69,11 +69,12 @@ that apply every time:
   reserved for failure, warning, and success. Spending them decoratively means
   there is no color left to signal a real problem.
 - **Never encode meaning in color alone.** Pair every color distinction with
-  shape, dash, stroke weight, or the label.
+  shape, dash, stroke weight, or the label — the status classes ship solid /
+  dashed / double borders for exactly this reason.
 - **Give edges a hierarchy.** Primary flow heavy and labeled; dependencies thin;
   async dashed; failure dashed and labeled. Every edge must earn its place.
-- **Three type tiers, one or two lines per label.** Set sizes on classes, not on
-  individual nodes.
+- **Three type tiers among the shapes**, one size for all edge labels, one or
+  two lines per label. Set sizes on classes, not on individual nodes.
 - **Past ~20 nodes, split the diagram.** Do not solve crowding by shrinking text
   or adding colors. Split the visual story into boards.
 - **Add a legend** when the encoding is not self-evident, and always for print.
@@ -290,8 +291,8 @@ rubric score for an image you did not see.
 - Text looks small → check `--scale 1` first; SVGs fit to screen by default.
 - Dark mode unreadable → drop explicit fills; import `semantic-classes` and set
   `dark-theme-id`.
-- `**` glob fails with `"style" needs a value` → it collides with `vars`. Use
-  single `*` or put sizes on classes.
+- `**` glob fails with `"style" needs a value` → it collided with a map inside
+  `vars` (such as `d2-config`). Use a single `*`, or put sizes on classes.
 - PNG/PDF export fails downloading a browser → render SVG and screenshot it, or
   use `scripts/review_d2.py --png`.
 - Import behaves unexpectedly → relative imports resolve from the importing

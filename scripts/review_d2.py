@@ -51,8 +51,19 @@ def die(message: str, code: int = 1) -> None:
     raise SystemExit(code)
 
 
-def run(cmd: list[str]) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(cmd, capture_output=True, text=True)
+# D2's raster pipeline can hang trying to fetch its browser on a restricted
+# network, which is exactly the case the browser fallback exists to survive - so
+# every subprocess is bounded.
+TIMEOUT_SECONDS = 90
+
+
+def run(cmd: list[str], timeout: float = TIMEOUT_SECONDS) -> subprocess.CompletedProcess[str]:
+    try:
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return subprocess.CompletedProcess(
+            cmd, returncode=124, stdout="", stderr=f"timed out after {timeout:g}s"
+        )
 
 
 def available_engines() -> list[str]:
@@ -100,7 +111,7 @@ def svg_stats(path: Path) -> dict[str, object]:
     if sizes:
         stats["font_min"] = sizes[0]
         stats["font_max"] = sizes[-1]
-        stats["font_tiers"] = len(sizes)
+        stats["font_sizes"] = len(sizes)
 
     return stats
 
@@ -141,9 +152,23 @@ def render_png(svg: Path, png: Path, source: Path, engine: str, theme: str | Non
     if browser is None:
         return False, "d2 png export failed and no headless browser found"
 
-    stats = svg_stats(svg)
-    width = int(min(3000, max(900, float(stats.get("width", 1600)) + 120)))
-    height = int(min(3000, max(600, float(stats.get("height", 900)) + 120)))
+    # Screenshot a scaled SVG, not the default one. `--scale` writes absolute
+    # dimensions instead of fit-to-screen, so sizing the window to the result
+    # captures the diagram at true size - otherwise this fallback would hand back
+    # an image at exactly the fit-to-window scale the guide calls the scale trap.
+    scaled = svg.with_name(f"{svg.stem}.scaled.svg")
+    cmd = ["d2", f"--layout={engine}", f"--scale={scale}"]
+    if theme is not None:
+        cmd.append(f"--theme={theme}")
+    cmd += [str(source), str(scaled)]
+    shot_source = scaled if run(cmd).returncode == 0 and scaled.exists() else svg
+
+    stats = svg_stats(shot_source)
+    width = int(float(stats.get("width", 1600)) + 40)
+    height = int(float(stats.get("height", 900)) + 40)
+    if width > 8000 or height > 8000:
+        return False, f"diagram is {width}x{height}px; too large to screenshot at scale {scale:g}"
+
     shot = run([
         browser,
         "--headless",
@@ -151,10 +176,12 @@ def render_png(svg: Path, png: Path, source: Path, engine: str, theme: str | Non
         "--hide-scrollbars",
         f"--window-size={width},{height}",
         f"--screenshot={png}",
-        str(svg),
+        str(shot_source),
     ])
+    if shot_source is scaled:
+        scaled.unlink(missing_ok=True)
     if png.exists():
-        return True, "browser"
+        return True, f"browser at scale {scale:g}"
     return False, (shot.stderr or "browser screenshot failed").strip()
 
 
@@ -279,8 +306,9 @@ def main(argv: list[str] | None = None) -> int:
         if fmt.returncode == 0:
             print("  fmt      ok")
         else:
+            # A warning, not a failure. This tool reviews how a diagram looks;
+            # `check_d2.sh` and CI are where formatting is enforced.
             print(f"  fmt      unformatted (run: d2 fmt {source})")
-            status = 1
 
         valid = run(["d2", "validate", str(source)])
         if valid.returncode == 0:
@@ -321,7 +349,7 @@ def main(argv: list[str] | None = None) -> int:
                 if "font_min" in stats:
                     summary.append(
                         f"text {stats['font_min']:g}-{stats['font_max']:g}px "
-                        f"({stats['font_tiers']} tiers)"
+                        f"({stats['font_sizes']} sizes)"
                     )
                 print(f"  {label:<16} {svg.name}  {'  '.join(summary)}")
 
@@ -345,10 +373,11 @@ def main(argv: list[str] | None = None) -> int:
                     }
                 )
 
-            # A dark render byte-identical to the light one means explicit
-            # fill/stroke values are overriding the theme - the diagram is not
-            # actually adaptive. Worth saying out loud, since it looks like it
-            # worked.
+            # When the dark render reuses most of the light render's hex colors,
+            # explicit fill/stroke values are overriding the theme and the
+            # diagram is not adaptive. That is deliberate for a hand-coloured
+            # pack like minimal-light and a bug for anything meant to follow the
+            # viewer, so this reports rather than judges.
             if args.dark:
                 light_svg = out_dir / f"{source.stem}.{engine}.light.svg"
                 dark_svg = out_dir / f"{source.stem}.{engine}.dark.svg"
@@ -358,9 +387,9 @@ def main(argv: list[str] | None = None) -> int:
                     union = light_colors | dark_colors
                     if union and len(light_colors & dark_colors) / len(union) >= 0.35:
                         print(
-                            f"  {'':<16} note: the dark render reuses most of the light palette - "
-                            "explicit fills are overriding the theme, so this diagram is "
-                            "not adaptive"
+                            f"  {'':<16} note: the dark render reuses most of the light "
+                            "palette, so explicit fills are overriding the theme. Intended "
+                            "for a hand-coloured pack; a bug if this diagram should adapt."
                         )
 
         groups.append({"source": str(source), "candidates": candidates})

@@ -3,10 +3,12 @@
 The only entry in this gallery with a `before.d2`. Both files compile. Both pass
 `scripts/check_d2.sh`. That is the lesson.
 
+Counting leaf nodes (containers listed separately) and declared connections:
+
 | | `before.d2` | `diagram.d2` |
 |---|---|---|
-| Nodes | 18 | 11 |
-| Edges | 27 | 9 |
+| Leaf nodes | 18 | 9 |
+| Edges | 26 | 9 |
 | Containers | 0 | 3 |
 | Distinct fill colors | 8 | 4 families |
 | Edge weights | 1 | 3 |

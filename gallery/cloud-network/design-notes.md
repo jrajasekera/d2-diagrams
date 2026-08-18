@@ -42,5 +42,6 @@ routed it around the entire VPC, producing a long line that crossed all three
 subnet boundaries — visually implying exactly the kind of unrestricted path the
 diagram exists to disprove. The NAT Gateway's name already says what it does.
 
-That edge cost 190px of width and undermined the thesis. **Low-value edges cost
-more than they look.**
+It also made the diagram wider, for something the NAT Gateway's own name already
+says. **Low-value edges cost more than they look** — and the cost is rarely just
+the line itself, it is what the router does to accommodate it.

@@ -58,8 +58,10 @@ on demand.
 - Add semantic classes to `styles/semantic-classes.d2` (structure only), then
   give every variant pack a palette entry for them. A class that exists in one
   pack and not the others will silently do nothing.
-- Never combine a `**` recursive glob with `vars` in the same file — it fails
-  with `"style" needs a value`. This is why the packs carry type sizes on classes.
+- Never combine a `**` recursive glob with a map inside `vars` (such as
+  `d2-config`) — it fails with `"style" needs a value`. And never give a `**`
+  glob a `${...}` substitution value: that crashes d2 outright. This is why the
+  packs carry style values on classes.
 - When adding, removing, or renaming package files, update `MANIFEST.md` and any
   affected `README.md` examples.
 - When changing `SKILL.md` frontmatter, preserve Agent Skills spec validity.

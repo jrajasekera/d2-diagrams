@@ -91,9 +91,11 @@ compile. A render is the real check; `scripts/check_d2.sh` does both.
 Symptom: a line like `**.style.font-size: 16` fails with
 `"style" needs a value`, sometimes pointing at an imported file.
 
-Cause: the recursive glob `**` matched inside `vars` (for example
-`vars.d2-config`), where `style` is not a valid key. The two cannot coexist in
-one file.
+Cause: the recursive glob `**` matched a *map* inside `vars` — `vars.d2-config`,
+say — where `style` is not a valid key. A `**` glob alongside only scalar `vars`
+compiles fine; it is the nested map that breaks it. Since any diagram setting a
+layout engine or theme in source has `vars.d2-config`, in practice the two rarely
+coexist.
 
 Fix: use the single-level `*` glob, or — better — put type sizes on classes,
 which is what the bundled style packs do:
@@ -107,6 +109,19 @@ classes: {
 
 api: API {class: primary_service}
 ```
+
+## d2 crashes with a goroutine stack overflow
+
+Symptom: `d2` dies with a Go runtime `stack overflow` dump instead of an error
+message.
+
+Cause (seen on 0.7.1): a `**` recursive glob whose value is a variable
+substitution, e.g. `**.style.fill: ${primary}`. The glob and the substitution
+recurse into each other.
+
+Fix: do not combine `**` with `${...}`. Set the value literally, or apply it
+through a class. This is another reason the bundled packs put style values on
+classes rather than on glob lines.
 
 ## PNG/PDF/PPTX export fails downloading a browser
 

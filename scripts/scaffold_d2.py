@@ -171,14 +171,54 @@ def cmd_create(args: argparse.Namespace) -> int:
     destination.parent.mkdir(parents=True, exist_ok=True)
 
     text = source.read_text(encoding="utf-8")
-    existing = IMPORT_RE.search(text)
+
+    # A template's imports are either a style pack (rewritable, and the point of
+    # --style) or a sibling template it depends on (must be copied verbatim, or
+    # the output will not compile).
+    style_import = None
+    sibling_imports: list[Path] = []
+    for match in IMPORT_RE.finditer(text):
+        stem = Path(match.group("path")).stem
+        if stem in styles:
+            if style_import is None:
+                style_import = match.group(0)
+        else:
+            sibling = TEMPLATES / f"{stem}.d2"
+            if not sibling.is_file():
+                print(
+                    f"error: {source.name} imports '{stem}', which is neither a style pack "
+                    f"nor a template in {TEMPLATES}. Cannot produce a diagram that compiles.",
+                    file=sys.stderr,
+                )
+                return 1
+            sibling_imports.append(sibling)
+
+    # Restyling a template whose classes come from a sibling import would leave
+    # every `class:` reference dangling, and D2 ignores unknown classes silently
+    # - it compiles and quietly loses all styling. Refuse instead.
+    if (args.style or args.medium) and sibling_imports:
+        print(
+            f"error: template '{args.template}' carries its own style file "
+            f"({', '.join(p.stem for p in sibling_imports)}), so --style/--medium cannot "
+            "be applied to it without dropping the styling it defines.",
+            file=sys.stderr,
+        )
+        print(
+            "       Use a template that imports a style pack, e.g. system-architecture.",
+            file=sys.stderr,
+        )
+        return 2
+
     # Without an explicit --style/--medium, keep whatever pack the template uses.
-    if style_name is None and existing:
-        style_name = Path(existing.group("path")).stem
-        if style_name not in styles:
-            style_name = None
+    if style_name is None and style_import is not None:
+        style_name = Path(style_import.removeprefix("...@").strip()).stem
 
     copied: list[Path] = []
+    for sibling in sibling_imports:
+        target = destination.parent / sibling.name
+        shutil.copyfile(sibling, target)
+        copied.append(target)
+
     if style_name:
         style_dir = destination.parent / "styles"
         style_dir.mkdir(parents=True, exist_ok=True)
@@ -188,8 +228,8 @@ def cmd_create(args: argparse.Namespace) -> int:
             copied.append(target)
 
         import_line = f"...@styles/{style_name}"
-        if existing:
-            text = IMPORT_RE.sub(import_line, text, count=1)
+        if style_import is not None:
+            text = text.replace(style_import, import_line, 1)
         else:
             text = f"{import_line}\n\n{text}"
 
@@ -200,7 +240,7 @@ def cmd_create(args: argparse.Namespace) -> int:
     destination.write_text(text, encoding="utf-8")
     print(f"created: {destination}")
     for path in copied:
-        print(f"  style:  {path}")
+        print(f"  needs:  {path}")
     print(f"\nNext: render it, look at the image, and revise. Do not stop at 'it compiled'.")
     print(f"  scripts/review_d2.py {destination}")
     return 0

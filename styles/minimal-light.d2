@@ -1,8 +1,14 @@
 # Style pack: minimal-light
 #
 # Neutral documentation aesthetic. Slate surfaces, one indigo accent for the
-# primary subject and primary flow, teal for stored data, and red/amber/green
-# reserved strictly for failure/warning/success. No shadows, no gradients.
+# primary subject and primary flow, teal for stored data. No shadows, no
+# gradients.
+#
+# Red, amber, and green are reserved for state. Amber covers the whole
+# "needs attention" register - warnings, manual gates (`decision`), and fallback
+# paths - which is why `decision` and `warning` share a palette; they are told
+# apart by shape, and `fallback_edge` by being an edge. Nothing decorative is
+# allowed into these three hues.
 #
 # Use with:  ...@../styles/minimal-light
 # Best for:  READMEs, design docs, wikis, PRs.

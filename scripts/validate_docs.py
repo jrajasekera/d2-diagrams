@@ -5,6 +5,11 @@ Documentation drifts away from the language faster than templates do, because
 nothing ever runs it. This extracts each fenced `d2` block and renders it, so a
 snippet that stopped being valid D2 fails here instead of in a user's editor.
 
+It only proves a snippet COMPILES. An example that compiles and teaches the wrong
+thing passes: a legend built with throwaway `l1 -> l2` endpoints renders six junk
+swatches and this script calls it fine. Compile-checking is not review - look at
+what the documentation examples actually render.
+
 Style-pack imports work: blocks are compiled beside a link to the real `styles/`,
 so both `...@styles/minimal-light` and `...@../styles/minimal-light` resolve.
 

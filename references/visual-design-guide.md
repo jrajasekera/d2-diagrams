@@ -86,9 +86,16 @@ presentation and down for dense reference diagrams:
 
 Rules:
 
-- **Three tiers maximum** in an ordinary diagram. Four sizes that differ by 2px
-  each read as inconsistency, not hierarchy. Make the steps large enough to be
-  intentional.
+- **Three tiers among the shapes.** Boundary labels and edge labels are separate
+  registers and sit outside that count, so an ordinary diagram lands on four or
+  five distinct sizes in total — the bundled packs use 14/16/18 for shapes, 22
+  for boundaries, and 14 for every edge label.
+- **Make the steps large enough to be intentional.** Two sizes 1–2px apart read
+  as a mistake, not a hierarchy. If two things need distinguishing but not
+  ranking, use weight or color, not a 1px size difference.
+- **One size for all edge labels.** Edge importance is carried by stroke weight
+  and dash; varying the label size too is a second signal for the same
+  distinction, and it makes the diagram look unfinished.
 - **One or two lines per node label.** A three-line label means the node is doing
   too much; split it, or move the detail into a tooltip.
 - **Concise nouns for components, short verbs or protocols for edges.**
@@ -142,12 +149,25 @@ grayscale decks. Every color distinction needs a redundant cue:
 | datastore vs. service | teal vs. indigo | `shape: cylinder` vs. `rectangle` |
 | async vs. sync edge | teal vs. indigo | `stroke-dash: 4` |
 | failure path | red | label (`timeout`), dashed stroke |
+| healthy vs. degraded vs. down | green / amber / red | solid vs. dashed vs. double border |
 | external system | grey | dashed border, `person`/dashed rectangle |
 
 The bundled style packs are built this way: shape, dash, and stroke weight carry
 the meaning, and color reinforces it. `styles/semantic-classes.d2` alone —
 imported with no palette — is a complete, legible diagram vocabulary. That is the
 test of whether color is doing too much work.
+
+The status classes are the ones this matters most for, because they are what a
+reader scans for, so they get a border treatment as well as a hue: `success` is
+solid, `warning` is dashed, `failure` is a double border. Told apart in
+greyscale, they still read correctly.
+
+Two colors are deliberately shared. `decision` and `warning` are both amber
+because amber covers the whole "needs attention" register — a manual gate and a
+degraded component are the same signal to a reader — and they are told apart by
+shape. `fallback_edge` is amber for the same reason and is told apart by being an
+edge. Sharing a hue across things that mean the same thing is not a collision;
+sharing one across things that do not is.
 
 Two further notes:
 
@@ -261,26 +281,44 @@ local files and URLs — see
 A legend is required whenever the diagram's visual encoding is not
 self-evident — which is most of the time once you are using an edge hierarchy.
 
-Use D2's native legend rather than hand-built boxes: it explains both objects and
-connections, takes a custom title, and lays itself out.
+Use D2's native legend rather than hand-built boxes: it explains objects and
+connections together and lays itself out.
 
 ```d2
+...@../styles/minimal-light
+
+api: API {class: primary_service}
+db: Store {class: datastore}
+api -> db: SQL {class: primary_edge}
+
 vars: {
   d2-legend: {
-    title: How to read this
     svc: Service {class: primary_service}
     store: Stateful store {class: datastore}
-    l1 -> l2: Synchronous call {class: primary_edge}
-    l3 -> l4: Asynchronous / eventual {class: async_edge}
-    l5 -> l6: Failure path {class: fallback_edge}
+    svc -> store: Synchronous call {class: primary_edge}
+    svc -> store: Asynchronous / eventual {class: async_edge}
+    store -> svc: Failure path {class: fallback_edge}
   }
 }
 ```
 
-The `l1 -> l2` keys are throwaway placeholders; only the label and style are
-shown. A legend is most valuable for print and PDF, where there are no tooltips
-to fall back on, and least valuable when a diagram uses only one kind of edge —
-in that case it is noise.
+Two things the syntax will not tell you, both of which produce a legend that
+looks broken rather than an error:
+
+- **Sample connections must reuse keys already declared inside the legend.**
+  Every key under `d2-legend` becomes an entry, so demonstrating an edge style
+  with a throwaway `l1 -> l2` silently adds `l1` and `l2` as their own swatches.
+  Draw the samples between the objects you already listed; repeating a pair is
+  fine, which is why `svc -> store` appears twice above.
+- **The heading is always "Legend".** There is no custom-title key; a `title:`
+  entry just becomes another labelled swatch.
+
+Use `class:` inside the legend rather than copying hex values. That keeps the
+legend honest — it shows the styles the diagram actually uses, instead of an
+approximation that drifts the next time the palette changes.
+
+A legend matters most in print and PDF, where there are no tooltips to fall back
+on, and is noise when a diagram uses only one kind of edge.
 
 ---
 

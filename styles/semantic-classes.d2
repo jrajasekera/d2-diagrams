@@ -101,6 +101,10 @@ classes: {
   }
 
   # --- State semantics ------------------------------------------------------
+  # Each state carries a border treatment as well as a hue: solid, dashed, and
+  # double. Colour alone would fail in greyscale, in print, and for the ~1 in 12
+  # men with a colour vision deficiency - and these three are exactly the
+  # classes a reader scans for, so they are the worst ones to encode by hue.
   success: {
     style: {
       stroke-width: 2
@@ -111,13 +115,15 @@ classes: {
   warning: {
     style: {
       stroke-width: 2
+      stroke-dash: 3
       font-size: 16
     }
   }
 
   failure: {
     style: {
-      stroke-width: 2
+      stroke-width: 3
+      double-border: true
       font-size: 16
     }
   }
@@ -134,7 +140,7 @@ classes: {
   secondary_edge: {
     style: {
       stroke-width: 1
-      font-size: 13
+      font-size: 14
     }
   }
 
@@ -142,7 +148,7 @@ classes: {
     style: {
       stroke-width: 2
       stroke-dash: 4
-      font-size: 13
+      font-size: 14
     }
   }
 
@@ -150,7 +156,7 @@ classes: {
     style: {
       stroke-width: 2
       stroke-dash: 3
-      font-size: 13
+      font-size: 14
     }
   }
 }

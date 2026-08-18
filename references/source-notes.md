@@ -42,7 +42,9 @@ Operational assumptions:
 Behaviour established by testing against D2 0.7.1 rather than taken from the docs:
 
 - `d2 validate` parses but does not compile: it succeeds on source with unresolved keys, nonexistent indexed edges, missing imports, and unbundlable local icons.
-- A `**` recursive glob and a `vars` block cannot coexist in one file; the combination fails with `"style" needs a value`. Hence type sizes on classes rather than a global glob.
+- A `**` recursive glob fails with `"style" needs a value` when `vars` contains a *map* (such as `d2-config`); alongside only scalar `vars` it compiles fine. Since any diagram setting a layout engine or theme in source has `vars.d2-config`, the two rarely coexist in practice. Hence type sizes on classes rather than a global glob.
+- A `**` glob whose value is a variable substitution (`**.style.fill: ${primary}`) crashes d2 0.7.1 with a fatal goroutine stack overflow rather than an error.
+- `style.double-border` and `style.stroke-dash` give the status classes a greyscale-safe cue, so `success`/`warning`/`failure` are not distinguished by hue alone.
 - `vars.d2-legend` has no title key (the heading is always "Legend"), and connection endpoints that are not already legend objects appear as extra swatches.
 - Layered style-pack imports work: a pack can spread another pack and override `classes.<name>.style.<key>` afterwards, including keys the base already set.
 - `style.fill: transparent` is the one fill value safe to set in a color-free pack; unlike a hex value it does not fight the active theme in either mode.
