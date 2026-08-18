@@ -1,0 +1,54 @@
+# Brief: "The same platform diagram, for our docs site - it has a dark mode and
+# the current diagram is unreadable in it."
+#
+# Thesis: a read request is served entirely from the cache tier; only writes
+# reach Postgres.
+#
+# Focal path: client -> api -> cache (read), api -> db (write)
+# Layout: elk. Medium: web documentation with a dark mode.
+#
+# The point of this example is the style choice, not the shapes: it imports
+# styles/semantic-classes (structure, no colors) and sets theme-id and
+# dark-theme-id, so the diagram follows the viewer's mode. Importing
+# minimal-light here would hard-code light fills and break dark mode; importing
+# minimal-dark would break light mode.
+
+...@../../styles/semantic-classes
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 0
+    dark-theme-id: 200
+    pad: 40
+    center: true
+  }
+}
+
+direction: right
+
+client: Client {class: actor}
+
+api: API {
+  class: boundary
+  read: Read Path {class: primary_service}
+  write: Write Path {class: primary_service}
+}
+
+cache: Cache Tier {
+  class: boundary
+  redis: Redis {class: datastore}
+  cdn_cache: Edge Cache {class: datastore}
+}
+
+db: PostgreSQL {class: datastore}
+invalidation: cache.invalidate {class: queue}
+
+client -> api.read: GET {class: primary_edge}
+client -> api.write: POST / PUT {class: primary_edge}
+api.read -> cache.cdn_cache: hit {class: primary_edge}
+api.read -> cache.redis: miss {class: secondary_edge}
+api.write -> db: SQL {class: primary_edge}
+api.write -> invalidation: publish {class: async_edge}
+invalidation -> cache.redis: evict keys {class: async_edge}
+invalidation -> cache.cdn_cache: purge {class: async_edge}

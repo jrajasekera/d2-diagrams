@@ -1,0 +1,85 @@
+# Style pack: minimal-dark
+#
+# The minimal-light palette inverted for dark surfaces. Same semantics, same
+# structure, higher-luminance strokes and text so contrast survives.
+#
+# Use with:  ...@../styles/minimal-dark
+# Best for:  dark-themed docs sites, terminals, slide decks on dark backgrounds.
+#
+# This pack hard-codes dark fills, so it is NOT adaptive: a viewer in light mode
+# still sees dark shapes. For one diagram that follows the viewer, import
+# semantic-classes instead and pair theme-id with dark-theme-id.
+
+...@semantic-classes
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 200
+    dark-theme-id: 200
+    pad: 40
+    center: true
+  }
+}
+
+# --- Actors and boundaries ---------------------------------------------------
+classes.actor.style.fill: "#1e293b"
+classes.actor.style.stroke: "#94a3b8"
+classes.actor.style.font-color: "#e2e8f0"
+
+classes.external_system.style.fill: "#0f172a"
+classes.external_system.style.stroke: "#64748b"
+classes.external_system.style.font-color: "#cbd5e1"
+
+classes.boundary.style.fill: "#0b1220"
+classes.boundary.style.stroke: "#334155"
+classes.boundary.style.font-color: "#94a3b8"
+
+# --- Components --------------------------------------------------------------
+classes.primary_service.style.fill: "#312e81"
+classes.primary_service.style.stroke: "#a5b4fc"
+classes.primary_service.style.font-color: "#eef2ff"
+
+classes.secondary_service.style.fill: "#1e293b"
+classes.secondary_service.style.stroke: "#64748b"
+classes.secondary_service.style.font-color: "#cbd5e1"
+
+classes.datastore.style.fill: "#134e4a"
+classes.datastore.style.stroke: "#5eead4"
+classes.datastore.style.font-color: "#ccfbf1"
+
+classes.queue.style.fill: "#134e4a"
+classes.queue.style.stroke: "#5eead4"
+classes.queue.style.font-color: "#ccfbf1"
+
+classes.decision.style.fill: "#78350f"
+classes.decision.style.stroke: "#fcd34d"
+classes.decision.style.font-color: "#fef3c7"
+
+classes.annotation.style.font-color: "#94a3b8"
+
+# --- State semantics ---------------------------------------------------------
+classes.success.style.fill: "#14532d"
+classes.success.style.stroke: "#86efac"
+classes.success.style.font-color: "#dcfce7"
+
+classes.warning.style.fill: "#78350f"
+classes.warning.style.stroke: "#fcd34d"
+classes.warning.style.font-color: "#fef3c7"
+
+classes.failure.style.fill: "#7f1d1d"
+classes.failure.style.stroke: "#fca5a5"
+classes.failure.style.font-color: "#fee2e2"
+
+# --- Edge hierarchy ----------------------------------------------------------
+classes.primary_edge.style.stroke: "#a5b4fc"
+classes.primary_edge.style.font-color: "#e0e7ff"
+
+classes.secondary_edge.style.stroke: "#64748b"
+classes.secondary_edge.style.font-color: "#94a3b8"
+
+classes.async_edge.style.stroke: "#5eead4"
+classes.async_edge.style.font-color: "#99f6e4"
+
+classes.fallback_edge.style.stroke: "#fcd34d"
+classes.fallback_edge.style.font-color: "#fde68a"

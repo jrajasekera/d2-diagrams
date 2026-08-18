@@ -1,0 +1,81 @@
+# Style pack: minimal-light
+#
+# Neutral documentation aesthetic. Slate surfaces, one indigo accent for the
+# primary subject and primary flow, teal for stored data, and red/amber/green
+# reserved strictly for failure/warning/success. No shadows, no gradients.
+#
+# Use with:  ...@../styles/minimal-light
+# Best for:  READMEs, design docs, wikis, PRs.
+
+...@semantic-classes
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 0
+    pad: 40
+    center: true
+  }
+}
+
+# --- Actors and boundaries ---------------------------------------------------
+classes.actor.style.fill: "#f1f5f9"
+classes.actor.style.stroke: "#475569"
+classes.actor.style.font-color: "#0f172a"
+
+classes.external_system.style.fill: "#f8fafc"
+classes.external_system.style.stroke: "#94a3b8"
+classes.external_system.style.font-color: "#334155"
+
+classes.boundary.style.fill: "#ffffff"
+classes.boundary.style.stroke: "#cbd5e1"
+classes.boundary.style.font-color: "#64748b"
+
+# --- Components --------------------------------------------------------------
+classes.primary_service.style.fill: "#eef2ff"
+classes.primary_service.style.stroke: "#4f46e5"
+classes.primary_service.style.font-color: "#1e1b4b"
+
+classes.secondary_service.style.fill: "#f8fafc"
+classes.secondary_service.style.stroke: "#94a3b8"
+classes.secondary_service.style.font-color: "#334155"
+
+classes.datastore.style.fill: "#effcf9"
+classes.datastore.style.stroke: "#0f766e"
+classes.datastore.style.font-color: "#134e4a"
+
+classes.queue.style.fill: "#effcf9"
+classes.queue.style.stroke: "#0f766e"
+classes.queue.style.font-color: "#134e4a"
+
+classes.decision.style.fill: "#fffbeb"
+classes.decision.style.stroke: "#b45309"
+classes.decision.style.font-color: "#78350f"
+
+classes.annotation.style.font-color: "#64748b"
+
+# --- State semantics ---------------------------------------------------------
+classes.success.style.fill: "#f0fdf4"
+classes.success.style.stroke: "#15803d"
+classes.success.style.font-color: "#14532d"
+
+classes.warning.style.fill: "#fffbeb"
+classes.warning.style.stroke: "#b45309"
+classes.warning.style.font-color: "#78350f"
+
+classes.failure.style.fill: "#fef2f2"
+classes.failure.style.stroke: "#b91c1c"
+classes.failure.style.font-color: "#7f1d1d"
+
+# --- Edge hierarchy ----------------------------------------------------------
+classes.primary_edge.style.stroke: "#4f46e5"
+classes.primary_edge.style.font-color: "#312e81"
+
+classes.secondary_edge.style.stroke: "#94a3b8"
+classes.secondary_edge.style.font-color: "#64748b"
+
+classes.async_edge.style.stroke: "#0f766e"
+classes.async_edge.style.font-color: "#134e4a"
+
+classes.fallback_edge.style.stroke: "#b45309"
+classes.fallback_edge.style.font-color: "#78350f"

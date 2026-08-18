@@ -1,8 +1,14 @@
 # Optional Codex app metadata. The portable skill entrypoint remains ../SKILL.md.
 interface:
   display_name: "D2 Diagrams"
-  short_description: "Create, convert, validate, and render D2 diagrams."
-  brand_color: "#2563EB"
-  default_prompt: "Use the d2-diagrams skill to create clear, maintainable D2 source and render it when the CLI is available."
+  short_description: "Design, convert, validate, and render D2 diagrams that are worth looking at."
+  brand_color: "#4F46E5"
+  default_prompt: >-
+    Use the d2-diagrams skill to design a visually reviewed, presentation-ready
+    D2 diagram: state its thesis, build the semantic model, apply a bundled style
+    pack, render candidates across layout engines, look at the rendered image,
+    and revise until it passes the visual rubric. Do not stop at source that
+    compiles. If you cannot inspect the render, say the diagram is statically
+    reviewed but not visually verified.
 policy:
   allow_implicit_invocation: true

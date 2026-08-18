@@ -1,33 +1,62 @@
-# Cloud/network topology starter
+# Cloud / network topology starter
+#
+# Thesis: public traffic terminates at the load balancer in the public subnet;
+# nothing outside the VPC reaches the data subnet.
+#
+# Focal path: internet -> alb -> app nodes -> rds
+# Omitted on purpose: security group rules, IAM, route tables, AZ redundancy of
+#   every component. Draw those on their own board if they are the question.
+#   Also dropped: a NAT -> Internet edge. It is true, and it forced a routed
+#   detour around the entire VPC for something the NAT Gateway label already
+#   says. Low-value edges cost more than they look.
+# Medium: web documentation.
+
+...@../styles/minimal-light
+
 direction: right
 
-internet: Internet { shape: cloud }
+vars: {
+  d2-legend: {
+    entry: Public entry point {class: primary_service}
+    private: Private compute {class: secondary_service}
+    store: Managed data service {class: datastore}
+    entry -> private: In-VPC traffic {class: primary_edge}
+    private -> entry: Egress {class: secondary_edge}
+  }
+}
+
+internet: Internet {
+  shape: cloud
+  class: external_system
+}
 
 region: us-east-1 {
+  class: boundary
+
   vpc: Production VPC {
+    class: boundary
+
     public: Public Subnet {
-      alb: Application Load Balancer
-      nat: NAT Gateway
+      class: boundary
+      alb: Application Load Balancer {class: primary_service}
+      nat: NAT Gateway {class: secondary_service}
     }
 
     private: Private Subnet {
-      app_a: App Node A
-      app_b: App Node B
+      class: boundary
+      app: App Nodes (x3) {class: primary_service}
     }
 
     data: Data Subnet {
-      db: RDS PostgreSQL { shape: cylinder }
-      cache: ElastiCache Redis { shape: stored_data }
+      class: boundary
+      db: RDS PostgreSQL {class: datastore}
+      cache: ElastiCache Redis {class: datastore}
     }
   }
 }
 
-internet -> region.vpc.public.alb: 443
-region.vpc.public.alb -> region.vpc.private.app_a: 8443
-region.vpc.public.alb -> region.vpc.private.app_b: 8443
-region.vpc.private.app_a -> region.vpc.data.db: 5432
-region.vpc.private.app_b -> region.vpc.data.db: 5432
-region.vpc.private.app_a -> region.vpc.data.cache: 6379
-region.vpc.private.app_b -> region.vpc.data.cache: 6379
-region.vpc.private.app_a -> region.vpc.public.nat: outbound
-region.vpc.private.app_b -> region.vpc.public.nat: outbound
+internet -> region.vpc.public.alb: 443 {class: primary_edge}
+region.vpc.public.alb -> region.vpc.private.app: 8443 {class: primary_edge}
+region.vpc.private.app -> region.vpc.data.db: 5432 {class: primary_edge}
+region.vpc.private.app -> region.vpc.data.cache: 6379 {class: secondary_edge}
+region.vpc.private.app -> region.vpc.public.nat: egress {class: secondary_edge}

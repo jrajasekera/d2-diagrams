@@ -1,0 +1,57 @@
+# Style pack: presentation
+#
+# Built for a projected 16:9 slide read from the back of a room: larger type,
+# heavier strokes, stronger fills, wider padding. Pair it with fewer nodes per
+# board - use layers/scenarios rather than shrinking anything.
+#
+# Use with:  ...@../styles/presentation
+# Best for:  slides, screen shares, conference talks, exec reviews.
+
+...@minimal-light
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 4
+    pad: 80
+    center: true
+  }
+}
+
+# Typography one full tier larger than the documentation default.
+classes.boundary.style.font-size: 28
+classes.primary_service.style.font-size: 26
+classes.secondary_service.style.font-size: 22
+classes.actor.style.font-size: 22
+classes.external_system.style.font-size: 22
+classes.datastore.style.font-size: 22
+classes.queue.style.font-size: 22
+classes.decision.style.font-size: 22
+classes.success.style.font-size: 22
+classes.warning.style.font-size: 22
+classes.failure.style.font-size: 22
+classes.annotation.style.font-size: 20
+
+classes.primary_edge.style.font-size: 20
+classes.secondary_edge.style.font-size: 18
+classes.async_edge.style.font-size: 18
+classes.fallback_edge.style.font-size: 18
+
+# Heavier strokes so shapes and the focal path survive projection.
+classes.primary_service.style.stroke-width: 4
+classes.secondary_service.style.stroke-width: 2
+classes.datastore.style.stroke-width: 3
+classes.queue.style.stroke-width: 3
+classes.primary_edge.style.stroke-width: 5
+classes.secondary_edge.style.stroke-width: 2
+classes.async_edge.style.stroke-width: 3
+classes.fallback_edge.style.stroke-width: 3
+
+# Stronger fills: contrast beats subtlety on a projector.
+classes.primary_service.style.fill: "#e0e7ff"
+classes.datastore.style.fill: "#ccfbf1"
+classes.queue.style.fill: "#ccfbf1"
+classes.decision.style.fill: "#fef3c7"
+classes.success.style.fill: "#dcfce7"
+classes.warning.style.fill: "#fef3c7"
+classes.failure.style.fill: "#fee2e2"

@@ -1,11 +1,25 @@
 # Sequence diagram starter
+#
+# Thesis: an order is accepted synchronously, and the OrderCreated event is what
+# makes the rest of the system move.
+#
+# Sequence diagrams are their own layout: participants are ordered left to right
+# by declaration order, messages top to bottom by declaration order, and the
+# layout engine and direction are ignored. Style packs still apply to the
+# participants, so the semantic colors stay consistent with the other diagrams.
+#
+# Omitted on purpose: retries, validation branches, and the worker side of the
+# queue. Add them as a scenario if the failure path is the question.
+
+...@../styles/minimal-light
+
 shape: sequence_diagram
 
-user: User
-browser: Browser
-api: API
-db: Database
-queue: Queue
+user: User {class: actor}
+browser: Browser {class: secondary_service}
+api: API {class: primary_service}
+db: Database {class: datastore}
+queue: Queue {class: queue}
 
 user -> browser: submit order
 browser -> api: POST /orders

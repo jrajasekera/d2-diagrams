@@ -1,0 +1,93 @@
+# Style pack: editorial
+#
+# For blog posts and long-form writing, where a diagram sits inside prose and is
+# allowed a little personality. Warm paper neutrals, a plum accent, cool slate
+# for stored data, soft shadows on primary components only, generous type.
+#
+# Use with:  ...@../styles/editorial
+# Best for:  articles, newsletters, docs landing pages, conference write-ups.
+
+...@semantic-classes
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+    theme-id: 0
+    pad: 60
+    center: true
+  }
+}
+
+# --- Actors and boundaries ---------------------------------------------------
+classes.actor.style.fill: "#f5f0ea"
+classes.actor.style.stroke: "#6b5f55"
+classes.actor.style.font-color: "#3f3730"
+
+classes.external_system.style.fill: "#faf7f2"
+classes.external_system.style.stroke: "#a89e93"
+classes.external_system.style.font-color: "#57504a"
+
+classes.boundary.style.fill: "#fdfbf7"
+classes.boundary.style.stroke: "#ddd3c6"
+classes.boundary.style.font-color: "#8a7f73"
+classes.boundary.style.font-size: 24
+
+# --- Components --------------------------------------------------------------
+classes.primary_service.style.fill: "#f3e8ff"
+classes.primary_service.style.stroke: "#7e22ce"
+classes.primary_service.style.font-color: "#4a1063"
+classes.primary_service.style.shadow: true
+classes.primary_service.style.font-size: 20
+
+classes.secondary_service.style.fill: "#faf7f2"
+classes.secondary_service.style.stroke: "#a89e93"
+classes.secondary_service.style.font-color: "#57504a"
+classes.secondary_service.style.font-size: 18
+
+classes.datastore.style.fill: "#eef2f7"
+classes.datastore.style.stroke: "#3b5f8a"
+classes.datastore.style.font-color: "#1e3a5f"
+classes.datastore.style.font-size: 18
+
+classes.queue.style.fill: "#eef2f7"
+classes.queue.style.stroke: "#3b5f8a"
+classes.queue.style.font-color: "#1e3a5f"
+classes.queue.style.font-size: 18
+
+classes.decision.style.fill: "#fef3c7"
+classes.decision.style.stroke: "#a16207"
+classes.decision.style.font-color: "#6b4708"
+classes.decision.style.font-size: 18
+
+classes.annotation.style.font-color: "#8a7f73"
+classes.annotation.style.font-size: 16
+
+# --- State semantics ---------------------------------------------------------
+classes.success.style.fill: "#ecfdf5"
+classes.success.style.stroke: "#047857"
+classes.success.style.font-color: "#064e3b"
+
+classes.warning.style.fill: "#fef3c7"
+classes.warning.style.stroke: "#a16207"
+classes.warning.style.font-color: "#6b4708"
+
+classes.failure.style.fill: "#fef2f2"
+classes.failure.style.stroke: "#b91c1c"
+classes.failure.style.font-color: "#7f1d1d"
+
+# --- Edge hierarchy ----------------------------------------------------------
+classes.primary_edge.style.stroke: "#7e22ce"
+classes.primary_edge.style.font-color: "#4a1063"
+classes.primary_edge.style.font-size: 16
+
+classes.secondary_edge.style.stroke: "#a89e93"
+classes.secondary_edge.style.font-color: "#8a7f73"
+classes.secondary_edge.style.font-size: 15
+
+classes.async_edge.style.stroke: "#3b5f8a"
+classes.async_edge.style.font-color: "#1e3a5f"
+classes.async_edge.style.font-size: 15
+
+classes.fallback_edge.style.stroke: "#a16207"
+classes.fallback_edge.style.font-color: "#6b4708"
+classes.fallback_edge.style.font-size: 15

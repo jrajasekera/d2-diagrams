@@ -1,0 +1,55 @@
+# Brief: "Runbook diagram for the primary-database failover, for the on-call
+# handbook. It should be obvious what breaks and what takes over."
+#
+# Thesis: when the primary loses its heartbeat, the monitor promotes the replica
+# and the API repoints - two actions, in that order.
+#
+# Focal path: monitor -> primary (detection), then api -> replica (recovery)
+# Layout: elk. Medium: internal docs, also printed into the on-call handbook.
+#
+# Uses steps rather than one board: a runbook reader needs the order of events,
+# and a single picture with both states on it is how people promote a replica
+# that was never demoted. Render the walkthrough with:
+#   d2 --animate-interval=2000 diagram.d2 failover.svg
+#
+# Red appears exactly once, on the thing that is actually broken.
+
+...@../../styles/minimal-light
+
+direction: right
+
+vars: {
+  d2-legend: {
+    healthy: Healthy {class: primary_service}
+    down: Failed {class: failure}
+    store: Database {class: datastore}
+    healthy -> store: Live traffic {class: primary_edge}
+    store -> healthy: Failover action {class: fallback_edge}
+  }
+}
+
+api: API {class: primary_service}
+monitor: Health Monitor {class: secondary_service}
+primary: Primary DB {class: datastore}
+replica: Replica DB {class: datastore}
+
+api -> primary: read/write {class: primary_edge}
+primary -> replica: streaming replication {class: async_edge}
+monitor -> primary: heartbeat {class: secondary_edge}
+
+steps: {
+  detect: {
+    monitor -> primary: no heartbeat for 30s {class: fallback_edge}
+    primary.class: failure
+  }
+
+  promote: {
+    monitor -> replica: promote {class: fallback_edge}
+    replica: Replica DB (promoted) {class: primary_service}
+  }
+
+  repoint: {
+    api -> replica: read/write {class: primary_edge}
+    primary.style.opacity: 0.3
+  }
+}

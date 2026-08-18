@@ -1,0 +1,40 @@
+# Brief: "One slide for the engineering all-hands: why our deploys are safe."
+#
+# Thesis: nothing reaches production without passing an automated gate, and a
+# failing canary rolls itself back.
+#
+# Focal path: merge -> pipeline -> canary -> full rollout
+# Layout: dagre. Medium: 16:9 slide, projected.
+#
+# Deliberately six nodes. An all-hands slide is not a runbook: the audience has
+# roughly ten seconds and no zoom control. The full pipeline lives in the docs
+# diagram; this one carries a single sentence.
+
+...@../../styles/presentation
+
+vars: {
+  d2-config: {
+    layout-engine: dagre
+  }
+
+  d2-legend: {
+    ok: Automated {class: primary_service}
+    gate: Safety gate {class: decision}
+    ok -> gate: Promote {class: primary_edge}
+    gate -> ok: Auto-rollback {class: fallback_edge}
+  }
+}
+
+direction: down
+
+merge: Merge to main {class: primary_service}
+pipeline: Build + Test {class: primary_service}
+canary: Canary 5% {class: decision}
+rollout: Full Rollout {class: success}
+rollback: Auto Rollback {class: failure}
+
+merge -> pipeline: {class: primary_edge}
+pipeline -> canary: deploy {class: primary_edge}
+canary -> rollout: metrics healthy {class: primary_edge}
+canary -> rollback: error budget burn {class: fallback_edge}
+rollback -> merge: revert {class: fallback_edge}

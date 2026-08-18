@@ -1,4 +1,16 @@
 # Entity relationship diagram starter
+#
+# Thesis: an order belongs to one user and fans out into line items that point
+# at products.
+#
+# Omitted on purpose: audit columns, indexes, soft-delete flags, and every table
+#   that is not part of the ordering story. An ERD that shows the whole schema
+#   answers no question in particular.
+# Layout: elk. Foreign-key edges connect specific rows, and elk routes those far
+#   more cleanly than dagre.
+
+...@../styles/minimal-light
+
 vars: {
   d2-config: {
     layout-engine: elk
@@ -9,24 +21,24 @@ direction: right
 
 users: {
   shape: sql_table
-  id: uuid { constraint: primary_key }
-  email: varchar { constraint: unique }
+  id: uuid {constraint: primary_key}
+  email: varchar {constraint: unique}
   name: varchar
   created_at: timestamp
 }
 
 products: {
   shape: sql_table
-  id: uuid { constraint: primary_key }
-  sku: varchar { constraint: unique }
+  id: uuid {constraint: primary_key}
+  sku: varchar {constraint: unique}
   name: varchar
   price_cents: int
 }
 
 orders: {
   shape: sql_table
-  id: uuid { constraint: primary_key }
-  user_id: uuid { constraint: foreign_key }
+  id: uuid {constraint: primary_key}
+  user_id: uuid {constraint: foreign_key}
   status: varchar
   total_cents: int
   created_at: timestamp
@@ -34,9 +46,9 @@ orders: {
 
 order_items: {
   shape: sql_table
-  id: uuid { constraint: primary_key }
-  order_id: uuid { constraint: foreign_key }
-  product_id: uuid { constraint: foreign_key }
+  id: uuid {constraint: primary_key}
+  order_id: uuid {constraint: foreign_key}
+  product_id: uuid {constraint: foreign_key}
   quantity: int
   unit_price_cents: int
 }

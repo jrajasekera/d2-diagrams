@@ -4,37 +4,51 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this repo is
 
-This is **not an application** — it is a portable **Agent Skill** package that teaches an agent how to author, convert, validate, and render [D2](https://d2lang.com/) diagrams. The "product" is documentation plus a few helper scripts and templates, shipped as a directory that gets copied into an agent's skills folder (`~/.claude/skills/`, `~/.agents/skills/`, `~/.hermes/skills/`, `~/.pi/agent/skills/`, etc.).
+This is **not an application** — it is a portable **Agent Skill** package that teaches an agent how to design, author, convert, validate, and render [D2](https://d2lang.com/) diagrams. The "product" is documentation, a style system, templates, a curated gallery, and a few helper scripts, shipped as a directory that gets copied into an agent's skills folder (`~/.claude/skills/`, `~/.agents/skills/`, `~/.hermes/skills/`, `~/.pi/agent/skills/`, etc.).
 
 Two distinct modes of work happen here:
 
 - **Using** the skill: producing D2 source for a user. That behavior is fully specified in `SKILL.md` and `references/`.
-- **Maintaining** the skill (what you usually do in this repo): editing the docs, templates, scripts, and metadata that make up the package. The notes below are about maintenance.
+- **Maintaining** the skill (what you usually do in this repo): editing the docs, styles, templates, gallery, scripts, and metadata that make up the package. The notes below are about maintenance.
+
+## The behavioral thesis
+
+The skill's job is not "generate D2 that compiles". It is:
+
+> Design a clear visual story, render alternatives, inspect the actual image, and revise until it looks intentional.
+
+`SKILL.md`'s eight-step core workflow encodes that, and steps 5–7 (render candidates → inspect the image → revise) are the part that actually changes output quality. `scripts/check_d2.sh` deliberately does *not* claim to be a quality gate; `scripts/review_d2.py` exists to make the inspect step cheap. Changes that make it easier to skip the loop are regressions even when they simplify the code.
 
 ## Architecture: progressive-disclosure documentation
 
 The package is built around the Agent Skills spec's progressive-disclosure model. Understanding the layering is essential before editing:
 
-- `SKILL.md` is the **single entrypoint**. Its YAML frontmatter (`name`, `description`, `license`, `compatibility`, `metadata`) is what agents load to decide whether to trigger the skill — the `description` is the trigger surface and must list the diagram types, formats, and conversion sources users might ask for. The body is the always-loaded core workflow and syntax.
-- `references/*.md` are **on-demand deep docs**, linked from the bottom of `SKILL.md`. They are not loaded until needed. Keep `SKILL.md` lean and push detail down into references:
+- `SKILL.md` is the **single entrypoint**. Its YAML frontmatter (`name`, `description`, `license`, `compatibility`, `metadata`) is what agents load to decide whether to trigger the skill — the `description` is the trigger surface and must list the diagram types, formats, and conversion sources users might ask for. The body is the always-loaded core workflow, hard rules, and syntax. Keep detail out of it.
+- `references/*.md` are **on-demand deep docs**, linked from the bottom of `SKILL.md`:
+  - `visual-design-guide.md` — thesis, hierarchy, typography, color, edge hierarchy, density, icons, legends, and the 100-point visual rubric
+  - `layout-and-medium-guide.md` — the render/inspect/revise loop, engine selection, output-medium profiles, multi-board storytelling
   - `d2-language-reference.md` — syntax, shapes, styles, layouts, imports, exports
   - `diagram-pattern-cookbook.md` — full recipes per diagram type
   - `conversion-guide.md` — Mermaid/PlantUML/Graphviz/prose → D2
   - `rendering-and-validation.md` — install, CLI, scripts, CI
   - `troubleshooting.md` — common D2 mistakes and repairs
   - `source-notes.md` — research links the skill was authored from
-- `templates/*.d2` are copy-ready starter diagrams (one per diagram pattern). `scripts/scaffold_d2.py` enumerates and copies them by file stem.
-- `tests/smoke.d2` is the minimal diagram used to prove the toolchain works.
+- `styles/*.d2` are the **visual system**. `semantic-classes.d2` defines the class vocabulary with structure only (shape, stroke weight, dash, type size) and no colors; each variant pack spreads it and adds a palette. Diagrams import a pack instead of hand-coloring shapes.
+- `templates/*.d2` are copy-ready starter diagrams. `scripts/scaffold_d2.py` enumerates and copies them by file stem, and copies the style-pack closure next to the output so the result does not depend on the skill's install path.
+- `gallery/*/` holds finished diagrams with `design-notes.md` and a committed `preview.svg`. This is the package's visual teaching material, and `gallery/architecture-minimal/before.d2` is the deliberate counter-example: valid D2 that renders successfully and is bad.
+- `tests/smoke.d2` proves the toolchain works; `tests/fixtures/probe-*.d2` exercise every semantic class in every style pack.
 
 `AGENTS.md` (for agents that read `AGENTS.md` instead of `SKILL.md`) and `agents/openai.yaml` (optional Codex display metadata) are **alternate front-doors to the same content** — they must stay consistent with `SKILL.md`, but `SKILL.md` is canonical.
 
 ## Cross-cutting invariants (do not break these)
 
 - **Portability across runtimes.** Content must work for Claude Code, Codex, Hermes, and Pi. Don't introduce runtime-specific assumptions or absolute paths.
-- **Relative paths only.** All intra-package links resolve from the package root (e.g. `references/...`, `scripts/check_d2.sh`). The skill is copied to unknown locations.
-- **Source is canonical; renders are disposable.** `.gitignore` excludes `*.svg/*.png/*.pdf/*.pptx/*.gif`. Never commit rendered output — it is always regenerable from `.d2` source.
+- **Relative paths only.** All intra-package links resolve from the package root (e.g. `references/...`, `scripts/check_d2.sh`, `../styles/minimal-light`). The skill is copied to unknown locations.
+- **Source is canonical; renders are disposable — with one exception.** `.gitignore` excludes `*.svg/*.png/*.pdf/*.pptx/*.gif`, but `!gallery/**/preview.svg` is negated back in. Those previews are intentional reference assets regenerated by `scripts/render_gallery.sh`; never commit any other render.
 - **The D2 CLI is optional.** Scripts must degrade gracefully when `d2` is absent (exit 127 with a clear message), and the skill must remain useful for source-only authoring. Don't make the CLI a hard dependency.
-- **Keep the inventory in sync.** When you add, remove, or rename a file, update `MANIFEST.md` (the file-by-file inventory) and any install/usage examples in `README.md`. When you add a template, no code change is needed for `scaffold_d2.py` (it globs `templates/*.d2`), but mention notable additions in the cookbook.
+- **Style packs must stay in sync.** A class added to `semantic-classes.d2` needs a palette entry in `minimal-light`, `minimal-dark`, `editorial`, and `sketch` (`presentation` inherits from `minimal-light`). A class that exists in one pack only will silently render unstyled elsewhere. `tests/fixtures/probe-*.d2` exist to catch this — extend them when you add a class.
+- **Never combine a `**` recursive glob with `vars` in one file.** It fails with `"style" needs a value`. This is why type sizes live on classes rather than in a global glob.
+- **Keep the inventory in sync.** When you add, remove, or rename a file, update `MANIFEST.md` and any install/usage examples in `README.md`. Adding a template needs no code change (`scaffold_d2.py` globs `templates/*.d2`), but mention notable additions in the cookbook and gallery index.
 - **Frontmatter validity.** Changes to `SKILL.md` frontmatter must keep it valid against the Agent Skills spec (https://agentskills.io/specification).
 
 ## Commands
@@ -42,28 +56,51 @@ The package is built around the Agent Skills spec's progressive-disclosure model
 Helper scripts live in `scripts/` and assume the D2 CLI is on `PATH` (not installed by default here — install via `curl -fsSL https://d2lang.com/install.sh | sh -s --` or `brew install d2`).
 
 ```bash
-# Validate one or more diagrams by rendering each to a throwaway SVG (this is the test)
+# The authoring loop: render candidates per engine, report geometry and type
+# sizes, write an HTML contact sheet. --png also writes images to read directly.
+scripts/review_d2.py templates/system-architecture.d2 --dark --png
+
+# Validate (d2 validate for syntax, then a render for semantics)
 scripts/check_d2.sh tests/smoke.d2
-scripts/check_d2.sh templates/*.d2          # validate every template
+scripts/check_d2.sh $(git ls-files '*.d2')
+D2_FMT=1 scripts/check_d2.sh templates/*.d2      # also enforce d2 fmt
 
 # Render a diagram; output format inferred from the output extension
 scripts/render_d2.sh templates/sequence-diagram.d2 /tmp/out.svg
 
-# Layout/theme overrides are environment variables, not flags
+# Overrides are environment variables, not flags. render_d2.sh reads:
+#   D2_LAYOUT D2_THEME D2_DARK_THEME D2_SKETCH D2_WATCH D2_PAD D2_CENTER
+#   D2_SCALE D2_TARGET D2_ANIMATE_INTERVAL D2_ASCII_MODE D2_FORCE_APPENDIX
+#   D2_OMIT_VERSION D2_FONT_REGULAR D2_FONT_ITALIC D2_FONT_BOLD
+#   D2_FONT_SEMIBOLD D2_FONT_MONO
+# check_d2.sh reads: D2_LAYOUT D2_THEME D2_FMT
 D2_LAYOUT=elk D2_THEME=4 scripts/render_d2.sh templates/system-architecture.d2 /tmp/out.svg
-# render_d2.sh also reads: D2_DARK_THEME, D2_SKETCH=1, D2_WATCH=1
-# check_d2.sh reads: D2_LAYOUT, D2_THEME
 
-# List / copy starter templates (templates referenced by file stem)
+# Compile every fenced ```d2 example in the Markdown (catches doc drift)
+scripts/validate_docs.py
+scripts/validate_docs.py --list
+
+# Gallery previews: regenerate, or fail on drift
+scripts/render_gallery.sh
+scripts/render_gallery.sh --check
+
+# List / scaffold. --style picks a pack, --medium picks one for a destination.
 scripts/scaffold_d2.py list
+scripts/scaffold_d2.py styles
 scripts/scaffold_d2.py create sequence-diagram ./login-flow.d2
+scripts/scaffold_d2.py create system-architecture ./deck.d2 --medium slides
+
+# Formatting (enforced in CI)
+d2 fmt $(git ls-files '*.d2')
 
 # Validate the skill package against the Agent Skills spec (requires skills-ref, run from parent dir)
 skills-ref validate ./d2-diagrams
 ```
 
-There is no build step and no test runner beyond `check_d2.sh` (a successful render is the pass condition). After editing any `.d2` template or `SKILL.md`/reference example, validate the affected `.d2` files with `check_d2.sh` if the CLI is available.
+There is no build step. The test suite is `.github/workflows/validate.yml`: formatting, `check_d2.sh` over every `.d2`, `validate_docs.py`, every template under both layout engines, `render_gallery.sh --check`, and a scaffold round-trip. The D2 version is pinned there on purpose — layout output changes between releases, so an unpinned CLI makes gallery previews drift for reasons unrelated to any change here.
 
 ## When editing diagram content
 
-The skill's own quality rules (in `SKILL.md`) apply to any `.d2` you write here, especially templates: stable lowercase snake_case IDs distinct from display labels, connect by key not label, semantic containers, labeled high-value edges, and centralized styling via classes/globs/themes/imports. Treat `SKILL.md`'s "Essential D2 syntax" and "Common fixes" sections as the source of truth and keep examples there consistent with `references/d2-language-reference.md`.
+Every `.d2` in this repo is an example of what the skill teaches, so it has to follow `references/visual-design-guide.md`: a thesis comment saying what the diagram is for and what was deliberately omitted; stable snake_case IDs distinct from labels; connections by key; semantic containers styled quieter than their contents; a real edge hierarchy; styling through style-pack classes rather than per-node hex; and red/amber/green reserved for failure/warning/success.
+
+Then render it and look at it. `d2 fmt` before committing.

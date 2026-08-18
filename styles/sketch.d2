@@ -1,0 +1,67 @@
+# Style pack: sketch
+#
+# Hand-drawn rendering for work that is still a proposal. The informal look is a
+# signal: "this is a sketch, argue with it." Keep boundaries loose, skip precise
+# labels, and expect to throw the diagram away.
+#
+# Use with:  ...@../styles/sketch
+# Best for:  design proposals, RFC drafts, whiteboard replays, brainstorms.
+
+...@semantic-classes
+
+vars: {
+  d2-config: {
+    layout-engine: dagre
+    theme-id: 302
+    sketch: true
+    pad: 60
+    center: true
+  }
+}
+
+# Muted, low-saturation palette: sketch mode already adds visual noise, so the
+# color layer stays quiet.
+classes.actor.style.fill: "#f4f4f5"
+classes.actor.style.stroke: "#52525b"
+
+classes.external_system.style.fill: "#fafafa"
+classes.external_system.style.stroke: "#a1a1aa"
+
+classes.boundary.style.fill: "#fefefe"
+classes.boundary.style.stroke: "#d4d4d8"
+classes.boundary.style.font-color: "#71717a"
+
+classes.primary_service.style.fill: "#e0f2fe"
+classes.primary_service.style.stroke: "#0369a1"
+classes.primary_service.style.font-color: "#0c4a6e"
+
+classes.secondary_service.style.fill: "#fafafa"
+classes.secondary_service.style.stroke: "#a1a1aa"
+
+classes.datastore.style.fill: "#f5f5f4"
+classes.datastore.style.stroke: "#78716c"
+
+classes.queue.style.fill: "#f5f5f4"
+classes.queue.style.stroke: "#78716c"
+
+classes.decision.style.fill: "#fef9c3"
+classes.decision.style.stroke: "#a16207"
+
+classes.annotation.style.font-color: "#71717a"
+
+classes.success.style.fill: "#dcfce7"
+classes.success.style.stroke: "#15803d"
+
+classes.warning.style.fill: "#fef9c3"
+classes.warning.style.stroke: "#a16207"
+
+classes.failure.style.fill: "#fee2e2"
+classes.failure.style.stroke: "#b91c1c"
+
+classes.primary_edge.style.stroke: "#0369a1"
+classes.secondary_edge.style.stroke: "#a1a1aa"
+classes.async_edge.style.stroke: "#78716c"
+classes.fallback_edge.style.stroke: "#a16207"
+
+# Sketch mode plus shadows reads as clutter.
+classes.primary_service.style.shadow: false

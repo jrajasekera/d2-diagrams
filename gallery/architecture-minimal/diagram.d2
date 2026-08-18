@@ -1,0 +1,58 @@
+# AFTER - the same system, designed.
+#
+# Brief: "Show how a customer request is served, for the README of the platform
+# repo. New engineers should understand the request path on day one."
+#
+# Thesis: a customer request is served synchronously by the API from Postgres and
+# Redis; everything asynchronous hangs off one queue.
+#
+# Focal path: customer -> edge -> api -> db  (primary_edge, indigo, weight 3)
+# Layout: elk. Engine: rendered against dagre too; dagre curved the worker edges
+#   back across the API container.
+# Medium: web documentation (README).
+
+...@../../styles/minimal-light
+
+direction: right
+
+vars: {
+  d2-legend: {
+    svc: On the request path {class: primary_service}
+    aux: Supporting {class: secondary_service}
+    store: Stateful store {class: datastore}
+    svc -> store: Synchronous {class: primary_edge}
+    svc -> store: Asynchronous {class: async_edge}
+  }
+}
+
+customer: Customer {class: actor}
+
+edge: Edge {
+  class: boundary
+  cdn: CDN {class: secondary_service}
+  waf: WAF + ALB {class: primary_service}
+}
+
+app: Application {
+  class: boundary
+  web: Web {class: secondary_service}
+  api: API {class: primary_service}
+  worker: Worker {class: secondary_service}
+}
+
+data: Data {
+  class: boundary
+  db: PostgreSQL {class: datastore}
+  cache: Redis {class: datastore}
+  queue: Order Queue {class: queue}
+}
+
+customer -> edge.waf: HTTPS {class: primary_edge}
+edge.cdn -> app.web: static {class: secondary_edge}
+edge.waf -> app.api: REST {class: primary_edge}
+app.web -> app.api: REST {class: secondary_edge}
+app.api -> data.db: SQL {class: primary_edge}
+app.api -> data.cache: sessions {class: secondary_edge}
+app.api -> data.queue: enqueue {class: async_edge}
+app.worker -> data.queue: consume {class: async_edge}
+app.worker -> data.db: results {class: secondary_edge}

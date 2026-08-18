@@ -350,6 +350,7 @@ const ok = a || b;
 
 ## Icons and images
 
+<!-- validate:skip -->
 ```d2
 server: {
   shape: image
@@ -385,7 +386,10 @@ orders.user_id -> users.id
 Recognized constraints are shortened in the table display, including `primary_key`, `foreign_key`, and `unique`. Multiple constraints can use arrays:
 
 ```d2
-email: varchar { constraint: [unique; not_null] }
+accounts: {
+  shape: sql_table
+  email: varchar { constraint: [unique; not_null] }
+}
 ```
 
 ## UML classes
@@ -544,6 +548,7 @@ Direction values: `up`, `down`, `right`, `left`.
 
 Regular import:
 
+<!-- validate:skip -->
 ```d2
 # styles.d2 contains classes, globs, etc.
 styles: @styles
@@ -551,12 +556,14 @@ styles: @styles
 
 Spread import inside a map:
 
+<!-- validate:skip -->
 ```d2
 ...@common-style
 ```
 
 Partial import:
 
+<!-- validate:skip -->
 ```d2
 admin: @people.admin
 ```

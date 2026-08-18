@@ -1,0 +1,34 @@
+# Brief: "Explain our OIDC login to a new backend engineer. They keep asking
+# which redirect happens when."
+#
+# Thesis: the browser makes three hops, and the application never sees the
+# user's password.
+#
+# Focal path: top to bottom - this is a sequence, the order IS the message.
+# Layout: none. Sequence diagrams ignore the layout engine.
+# Medium: internal docs.
+#
+# Deliberately one flow: no refresh, no logout, no error branch. Those are three
+# more sequence diagrams, not three more branches on this one - a sequence
+# diagram with conditionals in it stops being readable at about two.
+
+...@../../styles/minimal-light
+
+shape: sequence_diagram
+
+user: User {class: actor}
+browser: Browser {class: secondary_service}
+app: Application {class: primary_service}
+idp: Identity Provider {class: external_system}
+
+user -> browser: click "Sign in"
+browser -> app: GET /login
+app -> browser: 302 to IdP (+ state, PKCE challenge)
+browser -> idp: GET /authorize
+user -> idp: credentials + MFA
+idp -> browser: 302 back with code
+browser -> app: GET /callback?code
+app -> idp: POST /token (code + verifier)
+idp -> app: id_token + access_token
+app -> browser: session cookie
+browser -> user: signed in

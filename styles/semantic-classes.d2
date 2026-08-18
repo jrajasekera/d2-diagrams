@@ -1,0 +1,156 @@
+# Shared semantic class vocabulary for D2 diagrams.
+#
+# Structure only: shapes, stroke weights, dashes, type sizes, emphasis.
+# Deliberately no colors. Importing this pack on its own leaves every fill and
+# stroke to the active D2 theme, which is what keeps light/dark adaptive
+# rendering working (explicit fills override dark-theme colors).
+#
+# Use it directly for adaptive diagrams:
+#
+#   ...@../styles/semantic-classes
+#   vars: { d2-config: { theme-id: 0; dark-theme-id: 200 } }
+#
+# Or import a variant pack (minimal-light, minimal-dark, presentation,
+# editorial, sketch), each of which spreads this file and adds a palette.
+#
+# Best for: light/dark adaptive diagrams, and as the base of every other pack.
+
+classes: {
+  # --- Actors and boundaries -------------------------------------------------
+  actor: {
+    shape: person
+    style: {
+      stroke-width: 2
+      font-size: 16
+    }
+  }
+
+  external_system: {
+    shape: rectangle
+    style: {
+      stroke-width: 2
+      stroke-dash: 3
+      border-radius: 8
+      font-size: 16
+    }
+  }
+
+  # Containers should read quieter than their contents. `transparent` is the one
+  # fill safe to set here: unlike a hex value it does not fight the theme, so
+  # the boundary stays a frame in both light and dark mode.
+  boundary: {
+    style: {
+      fill: transparent
+      stroke-width: 1
+      stroke-dash: 3
+      border-radius: 12
+      font-size: 22
+    }
+  }
+
+  # --- Components -----------------------------------------------------------
+  primary_service: {
+    shape: rectangle
+    style: {
+      stroke-width: 3
+      border-radius: 8
+      font-size: 18
+      bold: true
+    }
+  }
+
+  secondary_service: {
+    shape: rectangle
+    style: {
+      stroke-width: 1
+      border-radius: 8
+      font-size: 16
+    }
+  }
+
+  datastore: {
+    shape: cylinder
+    style: {
+      stroke-width: 2
+      font-size: 16
+    }
+  }
+
+  queue: {
+    shape: queue
+    style: {
+      stroke-width: 2
+      font-size: 16
+    }
+  }
+
+  decision: {
+    shape: diamond
+    style: {
+      stroke-width: 2
+      font-size: 16
+    }
+  }
+
+  annotation: {
+    shape: text
+    style: {
+      font-size: 14
+      italic: true
+    }
+  }
+
+  # --- State semantics ------------------------------------------------------
+  success: {
+    style: {
+      stroke-width: 2
+      font-size: 16
+    }
+  }
+
+  warning: {
+    style: {
+      stroke-width: 2
+      font-size: 16
+    }
+  }
+
+  failure: {
+    style: {
+      stroke-width: 2
+      font-size: 16
+    }
+  }
+
+  # --- Edge hierarchy -------------------------------------------------------
+  primary_edge: {
+    style: {
+      stroke-width: 3
+      font-size: 14
+      bold: true
+    }
+  }
+
+  secondary_edge: {
+    style: {
+      stroke-width: 1
+      font-size: 13
+    }
+  }
+
+  async_edge: {
+    style: {
+      stroke-width: 2
+      stroke-dash: 4
+      font-size: 13
+    }
+  }
+
+  fallback_edge: {
+    style: {
+      stroke-width: 2
+      stroke-dash: 3
+      font-size: 13
+    }
+  }
+}

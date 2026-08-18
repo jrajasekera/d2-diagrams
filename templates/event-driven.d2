@@ -1,0 +1,54 @@
+# Event-driven architecture starter
+#
+# Thesis: the order service publishes one event and three consumers react
+# independently; no consumer calls another.
+#
+# Focal path: checkout -> orders -> order_events -> consumers
+# Omitted on purpose: schema registry, partitioning, retry topics, exactly-once
+#   semantics. Those are a separate board about delivery guarantees.
+# Medium: web documentation.
+#
+# The point of this shape is fan-out: the publisher does not know its consumers,
+# so there is no edge back from any consumer to the order service.
+
+...@../styles/minimal-light
+
+direction: right
+
+vars: {
+  d2-legend: {
+    pub: Publisher {class: primary_service}
+    sub: Consumer {class: secondary_service}
+    topic: Event topic {class: queue}
+    pub -> topic: Publish {class: primary_edge}
+    topic -> sub: Subscribe {class: async_edge}
+    sub -> topic: Dead letter {class: fallback_edge}
+  }
+}
+
+checkout: Checkout UI {class: actor}
+
+orders: Order Service {class: primary_service}
+order_events: order.events {class: queue}
+dead_letters: order.events.dlq {class: queue}
+
+consumers: Consumers {
+  class: boundary
+  fulfilment: Fulfilment {class: secondary_service}
+  billing: Billing {class: secondary_service}
+  analytics: Analytics Sink {class: secondary_service}
+}
+
+warehouse: Warehouse DB {class: datastore}
+ledger: Ledger {class: datastore}
+lake: Data Lake {class: datastore}
+
+checkout -> orders: place order {class: primary_edge}
+orders -> order_events: OrderPlaced {class: primary_edge}
+order_events -> consumers.fulfilment: {class: async_edge}
+order_events -> consumers.billing: {class: async_edge}
+order_events -> consumers.analytics: {class: async_edge}
+consumers.fulfilment -> warehouse: reserve stock {class: secondary_edge}
+consumers.billing -> ledger: post entry {class: secondary_edge}
+consumers.analytics -> lake: append {class: secondary_edge}
+consumers.billing -> dead_letters: unprocessable {class: fallback_edge}

@@ -1,0 +1,61 @@
+# Brief: "Security review wants one picture showing that the database is not
+# reachable from the internet."
+#
+# Thesis: the only path from the internet ends at the load balancer in the public
+# subnet; the data subnet has no inbound route from outside the VPC.
+#
+# Focal path: internet -> alb -> app -> db, with the boundary crossings visible
+# Layout: elk. Medium: review document, exported to PDF - hence the legend.
+#
+# Every container here is a real trust boundary, which is the whole argument. A
+# version of this diagram with the subnets flattened out would be prettier and
+# would prove nothing.
+#
+# Omitted: security-group rules, NACLs, IAM, and the bastion path. Each is a
+# separate question; putting them here would bury the one claim being made.
+
+...@../../styles/minimal-light
+
+direction: right
+
+vars: {
+  d2-legend: {
+    public: Internet-reachable {class: primary_service}
+    private: No inbound from internet {class: secondary_service}
+    store: Managed data service {class: datastore}
+    public -> private: Allowed {class: primary_edge}
+    private -> public: Egress only {class: secondary_edge}
+  }
+}
+
+internet: Internet {
+  shape: cloud
+  class: external_system
+}
+
+vpc: Production VPC {
+  class: boundary
+
+  public: Public Subnet {
+    class: boundary
+    alb: Load Balancer {class: primary_service}
+    nat: NAT Gateway {class: secondary_service}
+  }
+
+  private: Private Subnet {
+    class: boundary
+    app: App Nodes (x3) {class: secondary_service}
+  }
+
+  data: Data Subnet - no inbound route from the internet {
+    class: boundary
+    db: RDS PostgreSQL {class: datastore}
+    cache: ElastiCache {class: datastore}
+  }
+}
+
+internet -> vpc.public.alb: 443 {class: primary_edge}
+vpc.public.alb -> vpc.private.app: 8443 {class: primary_edge}
+vpc.private.app -> vpc.data.db: 5432 {class: primary_edge}
+vpc.private.app -> vpc.data.cache: 6379 {class: secondary_edge}
+vpc.private.app -> vpc.public.nat: egress {class: secondary_edge}

@@ -1,0 +1,68 @@
+# Brief: "New engineer asked how subscriptions and invoices relate. Do not send
+# them the 60-table schema dump."
+#
+# Thesis: a subscription generates invoices on a cycle; payments settle invoices,
+# not subscriptions.
+#
+# Focal path: subscription -> invoice -> payment
+# Layout: elk. Foreign-key edges attach to specific rows and elk routes them
+#   without the loops dagre produces here.
+# Medium: internal docs.
+#
+# Five tables out of sixty, and only the columns that carry the relationship.
+# The omission IS the answer to the question that was asked. Audit columns,
+# indexes, and every nullable settings field are left out on purpose.
+
+...@../../styles/minimal-light
+
+vars: {
+  d2-config: {
+    layout-engine: elk
+  }
+}
+
+direction: right
+
+customers: {
+  shape: sql_table
+  id: uuid {constraint: primary_key}
+  email: varchar {constraint: unique}
+}
+
+plans: {
+  shape: sql_table
+  id: uuid {constraint: primary_key}
+  code: varchar {constraint: unique}
+  interval: enum
+  amount_cents: int
+}
+
+subscriptions: {
+  shape: sql_table
+  id: uuid {constraint: primary_key}
+  customer_id: uuid {constraint: foreign_key}
+  plan_id: uuid {constraint: foreign_key}
+  status: enum
+  current_period_end: timestamp
+}
+
+invoices: {
+  shape: sql_table
+  id: uuid {constraint: primary_key}
+  subscription_id: uuid {constraint: foreign_key}
+  status: enum
+  total_cents: int
+}
+
+payments: {
+  shape: sql_table
+  id: uuid {constraint: primary_key}
+  invoice_id: uuid {constraint: foreign_key}
+  amount_cents: int
+  settled_at: timestamp
+}
+
+subscriptions.customer_id -> customers.id
+subscriptions.plan_id -> plans.id
+invoices.subscription_id -> subscriptions.id
+payments.invoice_id -> invoices.id

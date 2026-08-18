@@ -1,51 +1,63 @@
 # CI/CD pipeline starter
-direction: right
+#
+# Thesis: every commit walks one gated path to production, and a failed smoke
+# test sends it straight back.
+#
+# Focal path: push -> build -> tests -> gate -> deploy -> healthy
+# Omitted on purpose: individual test suites, artifact registries, per-env
+#   config. The rollback branch is the only non-happy path shown, deliberately.
+# Medium: web documentation. Pipelines read top-down.
 
-classes: {
-  stage: {
-    style: {
-      fill: "#f8fafc"
-      stroke: "#475569"
-      border-radius: 8
-    }
+...@../styles/minimal-light
+
+direction: down
+
+vars: {
+  # The style pack defaults to elk. We rendered both: elk stretched this pipeline
+  # to 2185px tall and routed the rollback edge around the whole Production
+  # container, so dagre wins here. Re-check if the pipeline grows.
+  d2-config: {
+    layout-engine: dagre
   }
-  gate: {
-    shape: diamond
-    style: {
-      fill: "#fef9c3"
-      stroke: "#ca8a04"
-    }
+
+  d2-legend: {
+    step: Pipeline stage {class: primary_service}
+    gate: Manual gate {class: decision}
+    step -> gate: Happy path {class: primary_edge}
+    gate -> step: Failure path {class: fallback_edge}
   }
 }
 
-dev: Developer { shape: person }
-repo: Git Repository { shape: stored_data }
+dev: Developer {class: actor}
+repo: Git Repository {class: datastore}
 
-ci: CI {
-  build: Build { class: stage }
-  unit: Unit Tests { class: stage }
-  scan: Security Scan { class: stage }
-  package: Package Image { class: stage }
+ci: Continuous Integration {
+  class: boundary
+  build: Build {class: primary_service}
+  unit: Unit Tests {class: primary_service}
+  scan: Security Scan {class: secondary_service}
+  package: Package Image {class: primary_service}
 }
 
-gate: Approval? { class: gate }
+approval: Approved? {class: decision}
 
 prod: Production {
-  deploy: Deploy { class: stage }
-  smoke: Smoke Tests { class: stage }
-  monitor: Monitor { class: stage }
+  class: boundary
+  deploy: Deploy {class: primary_service}
+  smoke: Smoke Tests {class: primary_service}
+  healthy: Serving Traffic {class: success}
 }
 
-rollback: Rollback { class: stage }
+rollback: Roll Back {class: failure}
 
-dev -> repo: push
-repo -> ci.build: trigger
-ci.build -> ci.unit
-ci.unit -> ci.scan
-ci.scan -> ci.package
-ci.package -> gate
-gate -> prod.deploy: approved
-prod.deploy -> prod.smoke
-prod.smoke -> prod.monitor: healthy
-prod.smoke -> rollback: failed
-rollback -> prod.deploy: restore previous
+dev -> repo: push {class: primary_edge}
+repo -> ci.build: trigger {class: primary_edge}
+ci.build -> ci.unit: {class: primary_edge}
+ci.unit -> ci.scan: {class: secondary_edge}
+ci.unit -> ci.package: {class: primary_edge}
+ci.package -> approval: {class: primary_edge}
+approval -> prod.deploy: yes {class: primary_edge}
+prod.deploy -> prod.smoke: {class: primary_edge}
+prod.smoke -> prod.healthy: pass {class: primary_edge}
+prod.smoke -> rollback: fail {class: fallback_edge}
+rollback -> prod.deploy: previous image {class: fallback_edge}

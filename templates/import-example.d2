@@ -3,10 +3,10 @@
 
 direction: right
 
-user: User { class: external }
-web: Web App { class: service }
-api: API { class: service }
-db: Database { class: datastore }
+user: User {class: external}
+web: Web App {class: service}
+api: API {class: service}
+db: Database {class: datastore}
 
 user -> web: uses
 web -> api: HTTPS

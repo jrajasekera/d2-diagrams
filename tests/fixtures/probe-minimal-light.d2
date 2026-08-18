@@ -1,0 +1,33 @@
+# Style-pack probe: exercises every semantic class in styles/minimal-light.d2.
+# Rendering this file is how we check the pack still compiles and still reads
+# as a coherent palette. Not a diagram anyone should copy.
+...@../../styles/minimal-light
+
+direction: right
+
+u: User {class: actor}
+ext: Third Party {class: external_system}
+
+b: Boundary {
+  class: boundary
+  ps: Primary Service {class: primary_service}
+  ss: Secondary Service {class: secondary_service}
+}
+
+db: Store {class: datastore}
+q: Job Queue {class: queue}
+dec: Healthy? {class: decision}
+note: Annotations read quietly {class: annotation}
+ok: Healthy {class: success}
+warn: Degraded {class: warning}
+bad: Unavailable {class: failure}
+
+u -> b.ps: request {class: primary_edge}
+b.ps -> b.ss: helper call {class: secondary_edge}
+b.ps -> q: publish {class: async_edge}
+b.ps -> db: SQL {class: primary_edge}
+ext -> b.ss: webhook {class: async_edge}
+db -> dec: probe {class: secondary_edge}
+dec -> ok: yes {class: secondary_edge}
+dec -> bad: no {class: fallback_edge}
+bad -> warn: shed load {class: fallback_edge}

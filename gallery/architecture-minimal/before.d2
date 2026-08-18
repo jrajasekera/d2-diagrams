@@ -1,0 +1,62 @@
+# BEFORE - valid D2 that nobody would want to look at.
+#
+# Everything here compiles and `check_d2.sh` reports ok. That is the point: a
+# successful render is not a quality gate. See design-notes.md for what is wrong
+# and diagram.d2 for the fix.
+
+direction: right
+
+customer: Customer
+cdn: CloudFront CDN
+waf: AWS WAF
+alb: ALB
+web: Next.js Web (v14.2, 3 pods)
+api: API Service (Go 1.22, 6 pods)
+authsvc: Auth Service
+searchsvc: Search Service
+notifysvc: Notification Service
+worker: Worker (BullMQ)
+db: PostgreSQL 15 (db.r6g.xlarge)
+replica: Read Replica
+cache: Redis 7
+queue: SQS orders-queue
+s3: S3 media-bucket
+metrics: Prometheus
+logs: Loki
+grafana: Grafana
+
+customer.style.fill: "#ff9999"
+cdn.style.fill: "#99ff99"
+waf.style.fill: "#9999ff"
+api.style.fill: "#ffff99"
+db.style.fill: "#ff99ff"
+worker.style.fill: "#99ffff"
+cache.style.fill: "#ffcc99"
+queue.style.fill: "#cc99ff"
+
+customer -> cdn
+cdn -> waf
+waf -> alb
+alb -> web
+web -> api
+api -> authsvc
+api -> searchsvc
+api -> notifysvc
+api -> db
+api -> replica
+api -> cache
+api -> queue
+api -> s3
+worker -> queue
+worker -> db
+worker -> notifysvc
+authsvc -> db
+searchsvc -> replica
+notifysvc -> queue
+metrics -> api
+metrics -> worker
+metrics -> db
+logs -> api
+logs -> worker
+grafana -> metrics
+grafana -> logs

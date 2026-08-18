@@ -1,0 +1,55 @@
+name: validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  # Pinned on purpose. Layout output changes between D2 releases, so an
+  # unpinned CLI would make gallery previews drift for reasons unrelated to any
+  # change in this repo. Bump deliberately, regenerate the previews in the same
+  # commit, and look at what changed.
+  D2_VERSION: v0.7.1
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install D2
+        run: |
+          curl -fsSL https://d2lang.com/install.sh | sh -s -- --version "$D2_VERSION"
+          d2 --version
+
+      - name: Formatting
+        run: d2 fmt --check $(git ls-files '*.d2')
+
+      - name: Validate and compile every diagram
+        run: scripts/check_d2.sh $(git ls-files '*.d2')
+
+      - name: Compile the D2 examples in the documentation
+        run: scripts/validate_docs.py
+
+      - name: Render every template under both layout engines
+        run: |
+          for engine in dagre elk; do
+            echo "== $engine"
+            D2_LAYOUT="$engine" scripts/check_d2.sh templates/*.d2 gallery/*/*.d2
+          done
+
+      - name: Check gallery previews for drift
+        run: scripts/render_gallery.sh --check
+
+      - name: Scaffolding still produces a diagram that compiles
+        run: |
+          scripts/scaffold_d2.py list
+          scripts/scaffold_d2.py styles
+          scripts/scaffold_d2.py create system-architecture "$RUNNER_TEMP/scaffold/arch.d2" --medium slides
+          scripts/check_d2.sh "$RUNNER_TEMP/scaffold/arch.d2"

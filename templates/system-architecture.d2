@@ -1,64 +1,61 @@
 # System architecture starter
+#
+# Thesis: a customer request enters through the edge, is served by the API, and
+# only the worker path touches the queue.
+#
+# Focal path: customer -> edge.waf -> app.api -> data.db (primary_edge)
+# Omitted on purpose: retries, auth internals, per-service config, replica count.
+#   Those belong in a drill-down layer, not here.
+# Medium: web documentation. Swap the import for ../styles/presentation for
+#   slides, or ../styles/semantic-classes for a light/dark adaptive render.
+
+...@../styles/minimal-light
+
 direction: right
 
-classes: {
-  external: {
-    shape: person
-    style: {
-      fill: "#f8fafc"
-      stroke: "#64748b"
-    }
-  }
-  service: {
-    shape: rectangle
-    style: {
-      fill: "#eef6ff"
-      stroke: "#2563eb"
-      border-radius: 8
-      shadow: true
-    }
-  }
-  data: {
-    shape: cylinder
-    style: {
-      fill: "#fff7ed"
-      stroke: "#c2410c"
-    }
-  }
-  async: {
-    style: {
-      stroke-dash: 4
-    }
+vars: {
+  # Legend connections must reuse keys already declared above them; new keys
+  # would each appear as an extra object entry. The heading is always "Legend".
+  d2-legend: {
+    svc: Request path {class: primary_service}
+    aux: Supporting service {class: secondary_service}
+    store: Stateful store {class: datastore}
+    svc -> store: Synchronous call {class: primary_edge}
+    svc -> store: Asynchronous / queued {class: async_edge}
   }
 }
 
-user: Customer { class: external }
-admin: Admin { class: external }
+customer: Customer {class: actor}
+admin: Operator {class: actor}
 
-edge: Edge Layer {
-  cdn: CDN { class: service }
-  waf: WAF { class: service }
+edge: Edge {
+  class: boundary
+  cdn: CDN {class: secondary_service}
+  waf: WAF {class: primary_service}
 }
 
 app: Application Platform {
-  web: Web App { class: service }
-  api: API Service { class: service }
-  worker: Worker { class: service }
+  class: boundary
+  web: Web App {class: secondary_service}
+  api: API Service {class: primary_service}
+  worker: Worker {class: secondary_service}
 }
 
 data: Data Layer {
-  db: PostgreSQL { class: data }
-  cache: Redis { shape: stored_data }
-  queue: Job Queue { shape: queue }
+  class: boundary
+  db: PostgreSQL {class: datastore}
+  cache: Redis {class: datastore}
+  jobs: Job Queue {class: queue}
 }
 
-user -> edge.cdn: HTTPS
-admin -> edge.waf: admin HTTPS
-edge.cdn -> edge.waf
-edge.waf -> app.web: static/app
-app.web -> app.api: REST
-app.api -> data.cache: sessions
-app.api -> data.db: SQL
-app.api -> data.queue: enqueue { class: async }
-app.worker -> data.queue: consume { class: async }
-app.worker -> data.db: update
+customer -> edge.cdn: HTTPS {class: secondary_edge}
+customer -> edge.waf: HTTPS {class: primary_edge}
+admin -> edge.waf: admin HTTPS {class: secondary_edge}
+edge.cdn -> app.web: static {class: secondary_edge}
+edge.waf -> app.api: REST {class: primary_edge}
+app.web -> app.api: REST {class: secondary_edge}
+app.api -> data.cache: sessions {class: secondary_edge}
+app.api -> data.db: SQL {class: primary_edge}
+app.api -> data.jobs: enqueue {class: async_edge}
+app.worker -> data.jobs: consume {class: async_edge}
+app.worker -> data.db: write results {class: secondary_edge}

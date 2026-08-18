@@ -1,36 +1,74 @@
-# Composition starter: scenarios and steps
+# Composition starter: layers, scenarios, and steps
+#
+# Thesis: one system, told as four boards - overview, normal operation, the
+# failover scenario, and the promotion sequence - instead of one crowded picture.
+#
+# This is the answer to "the diagram has too much in it". Splitting the story
+# beats shrinking the type. Render one board with:
+#   d2 --target='layers.failover' composition-scenarios.d2 out.svg
+# or all of them as an animated SVG / slide deck:
+#   d2 --animate-interval=1600 composition-scenarios.d2 out.svg
+#   d2 composition-scenarios.d2 out.pptx
+#
+# layers    = separate boards with independent content (drill-down)
+# scenarios = inherit the base board, then override (alternate states)
+# steps     = inherit cumulatively from the previous step (a walkthrough)
+
+...@../styles/minimal-light
+
 direction: right
 
-client: Client
-api: API
-primary_db: Primary DB { shape: cylinder }
-replica_db: Replica DB { shape: cylinder }
-monitor: Monitor
+client: Client {class: actor}
+api: API Service {class: primary_service}
+primary_db: Primary DB {class: datastore}
+replica_db: Replica DB {class: datastore}
+monitor: Health Monitor {class: secondary_service}
 
-client -> api: request
-api -> primary_db: read/write
-primary_db -> replica_db: replicate
-monitor -> primary_db: health check
+client -> api: request {class: primary_edge}
+api -> primary_db: read/write {class: primary_edge}
+primary_db -> replica_db: replicate {class: async_edge}
+monitor -> primary_db: health check {class: secondary_edge}
 
 scenarios: {
   normal: {
+    # The replica exists but is not in the request path: de-emphasise rather
+    # than delete, so the reader sees what is idle.
     replica_db.style.opacity: 0.45
   }
 
   failover: {
-    primary_db.style.opacity: 0.25
-    api -> replica_db: fail over writes
+    primary_db.class: failure
+    primary_db.style.opacity: 0.35
+    api -> replica_db: writes fail over {class: fallback_edge}
   }
 }
 
 steps: {
-  detect_failure: {
-    monitor -> primary_db: failure detected
-    primary_db.style.fill: "#fee2e2"
+  detect: {
+    monitor -> primary_db: no heartbeat {class: fallback_edge}
+    primary_db.class: failure
   }
 
-  promote_replica: {
-    replica_db: Promoted Replica
-    api -> replica_db: writes
+  promote: {
+    replica_db: Promoted Replica {class: primary_service}
+    api -> replica_db: writes {class: primary_edge}
+  }
+}
+
+layers: {
+  deployment: {
+    # A separate board: different content, not a variation of the one above.
+    direction: right
+    az_a: Zone A {
+      class: boundary
+      api_a: API {class: primary_service}
+      db_a: Primary DB {class: datastore}
+    }
+    az_b: Zone B {
+      class: boundary
+      api_b: API {class: primary_service}
+      db_b: Replica DB {class: datastore}
+    }
+    az_a.db_a -> az_b.db_b: streaming replication {class: async_edge}
   }
 }

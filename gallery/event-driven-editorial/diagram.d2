@@ -1,0 +1,41 @@
+# Brief: "A diagram for the blog post 'We deleted our service mesh'. It should
+# look like it belongs in the article, not in a Confluence page."
+#
+# Thesis: replacing synchronous service-to-service calls with one event topic
+# removed every cross-service dependency.
+#
+# Focal path: orders -> events -> the three consumers
+# Layout: elk. Medium: blog post, roughly 800px wide in the article column.
+#
+# Why editorial and not minimal-light: this diagram sits inside prose, where a
+# neutral corporate palette reads as a screenshot of someone else's document.
+# The plum accent and warm paper neutrals match the article's typography.
+
+...@../../styles/editorial
+
+direction: right
+
+vars: {
+  d2-legend: {
+    pub: Publishes {class: primary_service}
+    sub: Subscribes {class: secondary_service}
+    pub -> sub: Events, not calls {class: async_edge}
+  }
+}
+
+orders: Order Service {class: primary_service}
+events: order.events {class: queue}
+
+subs: Subscribers {
+  class: boundary
+  email: Email {class: secondary_service}
+  shipping: Shipping {class: secondary_service}
+  reporting: Reporting {class: secondary_service}
+}
+
+note: No consumer knows another exists {class: annotation}
+
+orders -> events: OrderPlaced {class: primary_edge}
+events -> subs.email: {class: async_edge}
+events -> subs.shipping: {class: async_edge}
+events -> subs.reporting: {class: async_edge}

@@ -2,6 +2,27 @@
 
 Use these recipes to move quickly from user intent to D2 source.
 
+This page answers **what structure to use**. It does not answer what the result
+should look like — that is [the visual design guide](visual-design-guide.md), and
+[the gallery](../gallery/) shows finished examples of most of these patterns with
+the reasoning behind them.
+
+Every recipe here assumes a style pack is imported, so the semantic classes
+(`primary_service`, `datastore`, `queue`, `primary_edge`, `async_edge`, …) are
+available:
+
+```d2
+...@../styles/minimal-light
+
+api: API {class: primary_service}
+db: Store {class: datastore}
+api -> db: SQL {class: primary_edge}
+```
+
+The examples below leave the import off to stay short. Do not leave it off in a
+real diagram: hand-coloring shapes is how a diagram acquires a palette nobody
+chose.
+
 ## 1. Software architecture / C4-style context
 
 Use for: service maps, system context, component diagrams, cloud diagrams, production architecture.
@@ -376,3 +397,81 @@ steps: {
   }
 }
 ```
+
+## 11. Legend
+
+Use for: any diagram whose visual encoding is not self-evident, and **always** for
+print or PDF, where there are no tooltips to fall back on.
+
+D2 has a native legend. Do not hand-build one out of shapes.
+
+```d2
+...@../styles/minimal-light
+
+vars: {
+  d2-legend: {
+    svc: On the request path {class: primary_service}
+    aux: Supporting service {class: secondary_service}
+    store: Stateful store {class: datastore}
+    svc -> store: Synchronous call {class: primary_edge}
+    svc -> store: Asynchronous / queued {class: async_edge}
+    store -> svc: Failure path {class: fallback_edge}
+  }
+}
+
+api: API {class: primary_service}
+db: PostgreSQL {class: datastore}
+api -> db: SQL {class: primary_edge}
+```
+
+Two rules the syntax will not enforce:
+
+- **Sample connections must reuse keys already declared in the legend.** A throwaway
+  `l1 -> l2` silently adds `l1` and `l2` as their own entries. Repeating a pair
+  (`svc -> store` twice, with different styles) is fine.
+- **The heading is always "Legend".** There is no custom-title key; a `title:`
+  entry just becomes another swatch.
+
+Using `class:` inside the legend keeps it honest — it shows the styles the
+diagram actually uses, rather than a hand-copied approximation that drifts.
+
+Skip the legend when the diagram has one kind of edge and one kind of node. There
+it is noise.
+
+## 12. Progressive detail: tooltips, links, and notes
+
+Use for: the version numbers, instance types, caveats, and runbook links that
+would otherwise bloat node labels and wreck the type hierarchy.
+
+```d2
+...@../styles/minimal-light
+
+api: API Service {
+  class: primary_service
+  tooltip: Go 1.22, 6 replicas, autoscaled on p99 latency
+  link: https://example.com/runbooks/api
+}
+
+db: PostgreSQL {
+  class: datastore
+  tooltip: 15.6 on db.r6g.xlarge, one synchronous standby
+}
+
+note: |md
+  Reads are served from the replica during business hours.
+  Writes always go to the primary.
+| {class: annotation}
+
+api -> db: SQL {class: primary_edge}
+```
+
+- **Tooltips** are interactive in SVG. Static exports (PNG, PDF) convert them into
+  a numbered appendix automatically; `--force-appendix` adds that appendix to SVG
+  too, which is what you want when the SVG will be printed.
+- **Links** turn a node into a drill-down. They survive into PDF.
+- **Markdown notes** carry two or three lines of prose that the reader needs but
+  that no shape should have to hold.
+
+This is the mechanism behind the density rule: move trivia *out*, not *down* into
+smaller type. See
+[density and whitespace](visual-design-guide.md#6-density-and-whitespace).

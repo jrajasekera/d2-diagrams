@@ -5,8 +5,10 @@
 *.pptx
 *.gif
 
-# Keep nothing rendered, but allow intentional asset exceptions here if needed
-# !docs/example.svg
+# Exception: gallery previews are teaching material, not build output. They are
+# committed on purpose and regenerated with scripts/render_gallery.sh, which also
+# checks them for drift.
+!gallery/**/preview.svg
 
 # Python
 __pycache__/

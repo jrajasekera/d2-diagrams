@@ -1,4 +1,9 @@
 # Styles, classes, and globs starter
+#
+# Teaches the mechanism: how classes, globs, and multi-class assignment work.
+# For real diagrams, import a pack from styles/ instead of redefining a palette
+# here - see templates/system-architecture.d2.
+
 direction: right
 
 classes: {
@@ -28,10 +33,10 @@ classes: {
 
 *.style.font-size: 18
 
-web: Web { class: service }
-api: API { class: service }
-worker: Worker { class: [service; warning] }
-db: PostgreSQL { class: database }
+web: Web {class: service}
+api: API {class: service}
+worker: Worker {class: [service; warning]}
+db: PostgreSQL {class: database}
 
 web -> api: REST
 api -> db: SQL

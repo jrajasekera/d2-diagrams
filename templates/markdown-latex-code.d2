@@ -1,23 +1,30 @@
 # Markdown, LaTeX, and code block starter
+#
+# Thesis: text-heavy nodes belong in block strings, not in cramped labels.
+#
+# Use these for the detail that would otherwise bloat a node label. Note that
+# Markdown labels rely on browser SVG features - they can look wrong in design
+# tools, though they render correctly in a browser and in PNG/PDF exports.
+
 direction: right
 
 note: |md
-# Deployment notes
-- Blue/green release
-- Health checks gate traffic shift
-- Rollback if error budget burn is high
+  # Deployment notes
+  - Blue/green release
+  - Health checks gate traffic shift
+  - Rollback if error budget burn is high
 |
 note.shape: rectangle
 
 formula: |latex
-SLO = 1 - \frac{\text{bad events}}{\text{total events}}
+  SLO = 1 - \frac{\text{bad events}}{\text{total events}}
 |
 
 snippet: |`ts
-export async function handler(req: Request): Promise<Response> {
-  const ok = req.method === "GET" || req.method === "HEAD";
-  return new Response(ok ? "ok" : "method not allowed");
-}
+  export async function handler(req: Request): Promise<Response> {
+    const ok = req.method === "GET" || req.method === "HEAD";
+    return new Response(ok ? "ok" : "method not allowed");
+  }
 `|
 
 note -> formula: defines
